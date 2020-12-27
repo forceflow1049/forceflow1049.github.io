@@ -36,7 +36,14 @@
     <div class="col-sm-6">
       <div class="card">
         <div class="card-body">
-          <canvas id="speakerChartCanvas"></canvas>
+          <canvas id="speakerChartCanvas" style="height: 100%;"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6">
+      <div class="card">
+        <div class="card-body">
+          <canvas id="genderChartCanvas" style="height: 100%;"></canvas>
         </div>
       </div>
     </div>
@@ -51,9 +58,9 @@
 
     constructor(name) {
 
-      this.name = name.split(' ').join('_'); // Replace spaces with underscores
-      this.name = this.name.split('.').join('_'); // Periods cause problems with JQuery
+      this.name = cleanName(name);
       this.displayName = name;
+      this.gender = '';
       this.owner = null;
       this.ticksActive = 0; // This will hold the number of seconds this entity has talked
 
@@ -74,10 +81,14 @@
       // checks that newName isn't already in use.
 
       this.displayName = newName;
-      this.name = newName.split(' ').join('_'); // Replace spaces with underscores
-      this.name = this.name.split('.').join('_'); // Periods cause problems with JQuery
+      this.name = cleanName(newName);
 
 
+    }
+
+    addGender(gender) {
+
+      this.gender = gender;
     }
 
     remove() {
@@ -118,10 +129,13 @@
             <H4>${this.displayName}</H4>
             <div id='${this.name}TimeField'></div>
           </button>
-          <button type="button" class="btn dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" id="${this.name}DropdownButton" style="background-color: ${primaryChartColors[tc.timedEntities.length]}"></button>
+          <button type="button" class="btn dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" id="${this.name}DropdownButton" style="background-color: ${primaryChartColors[primaryChartColorIterator]}"></button>
           <div class="dropdown-menu">
             <form onsubmit="return tc.renameEntity('${this.name}')">
             <input type="text" class="form-control" id="${this.name}NewNameInput" aria-describedby="newNameHelp" placeholder="Rename">
+            </form>
+            <form onsubmit="return tc.addGender('${this.name}')">
+            <input type="text" class="form-control" id="${this.name}GenderInput" aria-describedby="newNameHelp" placeholder="Add gender" value="${this.gender}">
             </form>
             <div class="dropdown-divider"></div>
             <a class="dropdown-item" id="${this.name}RemoveButton">Remove</a>
@@ -131,6 +145,7 @@
 
       $('#timedEtityButtons').append(html);
       this.updateDisplay(); // Add the current time
+      primaryChartColorIterator += 1;
       // Register an event listener to make this the active entity when clicked
       var t = this;
       $("#"+this.name+"MainButton").click(function(){t.makeActive();})
@@ -167,14 +182,35 @@
 
     };
 
+    getEntityByName(name) {
+
+      for (var i=0; i < this.timedEntities.length; i++) {
+        if(this.timedEntities[i].name == name) {
+          return this.timedEntities[i];
+        }
+      }
+    }
+
+
     createTimedEntity() {
 
-      var nameInput = document.getElementById("newNameInput");
-      if (nameInput.value != '') {
-        var entity = new TimedEntity(nameInput.value);
-        entity.createButton();
-        this.addTimedEntity(entity);
-        nameInput.value = '';
+      var displayName = document.getElementById("newNameInput").value;
+      var cleanedName = cleanName(displayName);
+
+      if (cleanedName != '') {
+
+        var nameTaken = false;
+        for (var i=0; i < this.timedEntities.length; i++) {
+            if(this.timedEntities[i].name == cleanedName) {
+              nameTaken = true;
+            }
+        }
+        if (!nameTaken) {
+          var entity = new TimedEntity(displayName);
+          entity.createButton();
+          this.addTimedEntity(entity);
+          document.getElementById("newNameInput").value = '';
+        }
       }
 
       return false; // Stop the form from submitting
@@ -182,6 +218,10 @@
     }
 
     addTimedEntity(entity) {
+
+      // Adds an entity created separately from this TimerControl.
+        // NOTE: If you add directly, you're responsible for checking for name
+      // conflicts. Better to use createTimedEntity()
 
       entity.setOwner(this);
       this.timedEntities.push(entity);
@@ -200,12 +240,22 @@
       }
 
       this.rebuildButtons();
-      this.updateChart();
+      this.updateCharts();
+    }
+
+    addGender(entityName) {
+
+      var gender = document.getElementById(entityName+'GenderInput').value;
+      this.getEntityByName(entityName).addGender(gender);
+
+      return false; // Stop the page from reloading on form submit.
     }
 
     rebuildButtons() {
 
       // Clear the div holding the buttons and rebuild it
+
+      primaryChartColorIterator = 0; // Reset before we rebuild the buttons
 
       document.getElementById('timedEtityButtons').innerHTML = '';
       for (var i=0; i < this.timedEntities.length; i++) {
@@ -226,9 +276,10 @@
 
     renameEntity(existingName) {
 
-      var newName = document.getElementById(existingName+'NewNameInput').value.trim();
+      var displayName = document.getElementById(existingName+'NewNameInput').value;
+      var cleanedName = cleanName(displayName);
 
-      if (newName != "") {
+      if (cleanedName != "") {
 
         // Find the entity in the list and also check that the new name isn't
         // already being used
@@ -238,12 +289,12 @@
             if(this.timedEntities[i].name == existingName) {
               match_i = i;
             }
-            if(this.timedEntities[i].name == newName) {
+            if(this.timedEntities[i].name == cleanedName) {
               nameTaken = true;
             }
         }
         if (nameTaken == false) {
-          this.timedEntities[match_i].changeName(newName);
+          this.timedEntities[match_i].changeName(displayName);
           this.rebuildButtons();
         } else {
           console.log("tc.renameEntity: Error: name in use!")
@@ -269,7 +320,12 @@
       }
     }
 
-    updateChart() {
+    updateCharts() {
+    this.updateSpeakerChart();
+    this.updateGenderChart();
+    }
+
+    updateSpeakerChart() {
 
       var names = [];
       var ticks = [];
@@ -284,6 +340,41 @@
       speakerChart.data.datasets[0].data = ticks;
 
       speakerChart.update();
+    }
+
+    updateGenderChart() {
+
+      var genders_ticks = {}; // The number of speaking seconds per gender
+      var genders_counts = {}; // The number of entities per gender
+
+      for (var i=0; i < this.timedEntities.length; i++) {
+        var entity = this.timedEntities[i];
+        var gender = entity.gender;
+
+        if (gender != '') {
+          if (gender in genders_ticks) {
+            genders_ticks[gender] += entity.ticksActive;
+            genders_counts[gender] += 1;
+          } else {
+            genders_ticks[gender] = entity.ticksActive;
+            genders_counts[gender] = 1;
+          }
+
+        }
+      }
+      var labels = Object.keys(genders_ticks);
+      var ticks = [];
+      var counts = [];
+      for (var i=0; i<labels.length; i++) {
+        ticks.push(genders_ticks[labels[i]]);
+        counts.push(genders_counts[labels[i]]);
+      }
+
+      genderChart.data.labels = labels;
+      genderChart.data.datasets[0].data = ticks;
+      genderChart.data.datasets[1].data = counts;
+
+      genderChart.update();
     }
 
     toggleTiming() {
@@ -304,7 +395,7 @@
 
       var t = this; // Need this because the scope of setInterval is Window
       this.intervalTimer = setInterval(function(){t.tick();}, 1000);
-      this.chartTimer = setInterval(function(){t.updateChart();}, 5000);
+      this.chartTimer = setInterval(function(){t.updateCharts();}, 5000);
     }
 
     stopTiming() {
@@ -318,7 +409,18 @@
 
   }
 
+  function cleanName(name) {
+
+    // Clean the name to remove problematic characters.
+    name = name.trim(); // Remove leading/trailing whitespace
+    name = name.split(' ').join('_'); // Replace spaces with underscores
+    name = name.split('.').join('_'); // Periods cause problems with JQuery
+
+    return name;
+  }
+
   // Define the colors that will represent the timedEntities in the chart. Duplicate this to handle a large number of entities.
+  var primaryChartColorIterator = 0; // increments to iterate the colors as we add new entities.
   var primaryChartColors = new Array(100).fill(['#5FAD56', '#FF8360', '#3E7CB1', '#BD619E', '#F4D35E', '#34ADA7', '#8C9051', '#F69A65']).flat();
 
   var tc = new TimerControl();
@@ -328,6 +430,15 @@
 
   var speakerChartOptions = {
   cutoutPercentage: 75,
+  responsive: true,
+  maintainAspectRatio: false,
+  title: {
+    text: "Speaker",
+    display: true,
+    position: 'bottom',
+    fontSize: 25,
+    padding: 1,
+  },
   legend: {
     display: false,
     position:'bottom',
@@ -350,22 +461,89 @@
     },
    },
   };
+
   var speakerChartData = {
       labels: ['No speakers yet'],
       datasets: [
         {
           backgroundColor: primaryChartColors,
-          borderWidth: 0,
+          borderWidth: 1,
           data: [0]
         }
       ]
   };
+
   var speakerChartCanvas = document.getElementById("speakerChartCanvas");
   if (speakerChartCanvas) {
     speakerChart = new Chart(speakerChartCanvas, {
                         type: 'pie',
                         data: speakerChartData,
                         options: speakerChartOptions
+                    });
+  }
+
+  var genderChartOptions = {
+  cutoutPercentage: 50,
+  responsive: true,
+  maintainAspectRatio: false,
+  title: {
+    text: "Gender",
+    display: true,
+    position: 'bottom',
+    fontSize: 25,
+    padding: 1,
+  },
+  legend: {
+    display: false,
+    position:'bottom',
+    labels:{
+     pointStyle:'circle',
+     usePointStyle:true,
+     fontSize: 20,
+    },
+  },
+  tooltips: {
+    enabled: true,
+    bodyFontSize: 20,
+    callbacks: {
+      label: function(tooltipItems, data) {
+        var i = tooltipItems.index
+        var labels = [];
+        if (tooltipItems.datasetIndex == 0) { // Tooltip is speaking time
+          var dateStr = new Date(data.datasets[0].data[i] * 1000).toISOString().substr(11, 8);
+          labels.push(data.labels[i] + ": " + dateStr);
+        } else {
+          var dateStr = data.datasets[1].data[i];
+          labels.push(data.labels[i] + ": " + dateStr);
+        }
+
+        return labels;}
+    },
+   },
+  };
+
+  var genderChartData = {
+      labels: ['No speakers yet'],
+      datasets: [
+        { // This one holds the speaking time
+          backgroundColor: primaryChartColors,
+          borderWidth: 1,
+          data: [0]
+        },
+        { // This one holds the number of speakers
+          backgroundColor: primaryChartColors,
+          borderWidth: 1,
+          data: [0]
+        }
+      ]
+  };
+
+  var genderChartCanvas = document.getElementById("genderChartCanvas");
+  if (speakerChartCanvas) {
+    genderChart = new Chart(genderChartCanvas, {
+                        type: 'pie',
+                        data: genderChartData,
+                        options: genderChartOptions
                     });
   }
 
