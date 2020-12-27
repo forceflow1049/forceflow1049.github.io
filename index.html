@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.bundle.min.js"></script>
+</head>
+<body>
+
+<div class="container-fluid">
+  <h1>TalkingTimeTracker</h1>
+
+  <form onsubmit="return tc.createTimedEntity()">
+     <div class="row">
+       <div class="col-auto">
+         <input type="text" class="form-control" id="newNameInput" aria-describedby="newNameHelp" placeholder="Enter unique name">
+       </div>
+       <div class="col-auto">
+         <button type="button" class="btn btn-primary" id="addTimedEntityButton">Add</button>
+       </div>
+       <div class="col-auto">
+         <button type="button" class="btn btn-warning" id="toggleTiming">Start Timing</button>
+       </div>
+     </div>
+  </form>
+
+  <div id='timedEtityButtons'>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-6">
+      <div class="card">
+        <div class="card-body">
+          <canvas id="speakerChartCanvas"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+<script>
+
+  class TimedEntity {
+
+    // One of the people/things we are tracking the talking time of
+
+    constructor(name) {
+
+      this.name = name.split(' ').join('_'); // Replace spaces with underscores
+      this.name = this.name.split('.').join('_'); // Periods cause problems with JQuery
+      this.displayName = name;
+      this.owner = null;
+      this.ticksActive = 0; // This will hold the number of seconds this entity has talked
+
+    };
+
+    setOwner(owner) {
+
+      // Owner should be a reference to a TimerControl object that has added
+      // this entity to its timedEntities list
+
+      this.owner = owner
+
+    }
+
+    changeName(newName) {
+
+      // This should only be called through TimingControl.renameEntity, which
+      // checks that newName isn't already in use.
+
+      this.displayName = newName;
+      this.name = newName.split(' ').join('_'); // Replace spaces with underscores
+      this.name = this.name.split('.').join('_'); // Periods cause problems with JQuery
+
+
+    }
+
+    remove() {
+
+      // Ask the owner to remove this instance
+
+      this.owner.removeTimedEntity(this);
+
+    }
+
+    addTicks(num) {
+
+      this.ticksActive += num;
+      this.updateDisplay();
+
+    }
+
+    makeActive() {
+
+      // This will stop timing all other entities owned by this entity's owner
+      // and change their appearance
+
+      this.owner.setActiveEntity(this);
+      $(".btn-success").removeClass('btn-success').addClass('btn-secondary');
+      $("#"+this.name+'MainButton').removeClass('btn-secondary').addClass('btn-success');
+      $("#"+this.name+'DropdownButton').removeClass('btn-secondary').addClass('btn-success');
+
+    }
+
+    createButton() {
+
+      // Creates the button that will be used to toggle the entity and adds
+      // the button to the timedEtityButtons div
+
+      var html = `
+        <div class="btn-group col-sm-5 mt-3">
+          <button type="button" class="btn btn-secondary" id="${this.name}MainButton">
+            <H4>${this.displayName}</H4>
+            <div id='${this.name}TimeField'></div>
+          </button>
+          <button type="button" class="btn dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" id="${this.name}DropdownButton" style="background-color: ${primaryChartColors[tc.timedEntities.length]}"></button>
+          <div class="dropdown-menu">
+            <form onsubmit="return tc.renameEntity('${this.name}')">
+            <input type="text" class="form-control" id="${this.name}NewNameInput" aria-describedby="newNameHelp" placeholder="Rename">
+            </form>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" id="${this.name}RemoveButton">Remove</a>
+          </div>
+        </div>
+        `
+
+      $('#timedEtityButtons').append(html);
+      this.updateDisplay(); // Add the current time
+      // Register an event listener to make this the active entity when clicked
+      var t = this;
+      $("#"+this.name+"MainButton").click(function(){t.makeActive();})
+      $("#"+this.name+"RemoveButton").click(function(){t.remove();})
+
+    }
+
+    updateDisplay() {
+
+      // Format the seconds appropriately and push this new string to the
+      // div corresponding to this entity's time display.
+
+      var date = new Date(this.ticksActive * 1000).toISOString().substr(11, 8);
+      document.getElementById(this.name+"TimeField").innerHTML = date;
+
+    }
+  }
+
+  class TimerControl {
+
+    // Handles keeping track of what is being timed
+
+    constructor() {
+
+      this.timedEntities = []; // Will hold list of entities being tracked
+      this.activeEntity = null; // This is the entity we are currently timing
+      this.intervalTimer = null; // Will hold reference after we start setInterval
+      this.chartTimer = null; // Will hold referenec to the setInterval for updating the charts
+      this.timingActive = false; // Are we currently running the timer?
+      // Store the timestamp in ms of the last time a tick happened in case the
+      // app gets backgrounded and JS execution stops. Can then add in the right
+      // number of secconds after
+      this.lastTickTime = -1;
+
+    };
+
+    createTimedEntity() {
+
+      var nameInput = document.getElementById("newNameInput");
+      if (nameInput.value != '') {
+        var entity = new TimedEntity(nameInput.value);
+        entity.createButton();
+        this.addTimedEntity(entity);
+        nameInput.value = '';
+      }
+
+      return false; // Stop the form from submitting
+
+    }
+
+    addTimedEntity(entity) {
+
+      entity.setOwner(this);
+      this.timedEntities.push(entity);
+
+    }
+
+    removeTimedEntity(entity) {
+
+      for (var i=0; i < this.timedEntities.length; i++) {
+        if(this.timedEntities[i] == entity) {
+          this.timedEntities.splice(i, 1);
+          if (this.activeEntity == entity) {
+            this.activeEntity = null;
+          }
+        }
+      }
+
+      this.rebuildButtons();
+      this.updateChart();
+    }
+
+    rebuildButtons() {
+
+      // Clear the div holding the buttons and rebuild it
+
+      document.getElementById('timedEtityButtons').innerHTML = '';
+      for (var i=0; i < this.timedEntities.length; i++) {
+          this.timedEntities[i].createButton();
+          if (this.activeEntity) {
+            if (this.activeEntity == this.timedEntities[i]) {
+              this.timedEntities[i].makeActive(); // To restore its color
+            }
+          }
+      }
+    }
+
+    setActiveEntity(entity) {
+
+      this.activeEntity = entity;
+
+    }
+
+    renameEntity(existingName) {
+
+      var newName = document.getElementById(existingName+'NewNameInput').value.trim();
+
+      if (newName != "") {
+
+        // Find the entity in the list and also check that the new name isn't
+        // already being used
+        var match_i = null;
+        var nameTaken = false;
+        for (var i=0; i < this.timedEntities.length; i++) {
+            if(this.timedEntities[i].name == existingName) {
+              match_i = i;
+            }
+            if(this.timedEntities[i].name == newName) {
+              nameTaken = true;
+            }
+        }
+        if (nameTaken == false) {
+          this.timedEntities[match_i].changeName(newName);
+          this.rebuildButtons();
+        } else {
+          console.log("tc.renameEntity: Error: name in use!")
+        }
+      }
+
+      return false; // Stop the form from submitting
+    }
+
+    tick() {
+
+      // Called every 1 second
+
+      var ticksToAdd = 1;
+      let nowTime = new Date().getTime();
+      if ((this.lastTickTime != -1) && (nowTime - this.lastTickTime) > 2000) { // ms. Allow for a little slop here to account for inprecise timing
+        ticksToAdd = (nowTime - this.lastTickTime)/1000;
+      }
+      this.lastTickTime = nowTime;
+
+      if(this.activeEntity) {
+        this.activeEntity.addTicks(ticksToAdd);
+      }
+    }
+
+    updateChart() {
+
+      var names = [];
+      var ticks = [];
+
+      for (var i=0; i < this.timedEntities.length; i++) {
+        var entity = this.timedEntities[i];
+        names.push(entity.displayName);
+        ticks.push(entity.ticksActive);
+      }
+
+      speakerChart.data.labels = names;
+      speakerChart.data.datasets[0].data = ticks;
+
+      speakerChart.update();
+    }
+
+    toggleTiming() {
+      if (this.timingActive == false) {
+        this.startTiming();
+        this.timingActive = true;
+        $('#toggleTiming').removeClass('btn-warning').addClass('btn-danger');
+        $('#toggleTiming').html('Pause Timing');
+      } else {
+        this.stopTiming();
+        this.timingActive = false;
+        $('#toggleTiming').removeClass('btn-danger').addClass('btn-warning');
+        $('#toggleTiming').html('Start Timing');
+      }
+    }
+
+    startTiming() {
+
+      var t = this; // Need this because the scope of setInterval is Window
+      this.intervalTimer = setInterval(function(){t.tick();}, 1000);
+      this.chartTimer = setInterval(function(){t.updateChart();}, 5000);
+    }
+
+    stopTiming() {
+
+      clearInterval(this.intervalTimer);
+      clearInterval(this.chartTimer);
+
+      this.lastTickTime = -1; // So that we don't accidentally add a bunch of time when we restart
+
+    }
+
+  }
+
+  // Define the colors that will represent the timedEntities in the chart. Duplicate this to handle a large number of entities.
+  var primaryChartColors = new Array(100).fill(['#5FAD56', '#FF8360', '#3E7CB1', '#BD619E', '#F4D35E', '#34ADA7', '#8C9051', '#F69A65']).flat();
+
+  var tc = new TimerControl();
+
+  $('#addTimedEntityButton').click(function() {tc.createTimedEntity();})
+  $('#toggleTiming').click(function() {tc.toggleTiming();})
+
+  var speakerChartOptions = {
+  cutoutPercentage: 75,
+  legend: {
+    display: false,
+    position:'bottom',
+    labels:{
+     pointStyle:'circle',
+     usePointStyle:true,
+     fontSize: 20,
+    },
+  },
+  tooltips: {
+    enabled: true,
+    bodyFontSize: 20,
+    callbacks: {
+      label: function(tooltipItems, data) {
+        var i = tooltipItems.index
+        var labels = [];
+          var dateStr = new Date(data.datasets[0].data[i] * 1000).toISOString().substr(11, 8);
+          labels.push(data.labels[i] + ": " + dateStr);
+        return labels;}
+    },
+   },
+  };
+  var speakerChartData = {
+      labels: ['No speakers yet'],
+      datasets: [
+        {
+          backgroundColor: primaryChartColors,
+          borderWidth: 0,
+          data: [0]
+        }
+      ]
+  };
+  var speakerChartCanvas = document.getElementById("speakerChartCanvas");
+  if (speakerChartCanvas) {
+    speakerChart = new Chart(speakerChartCanvas, {
+                        type: 'pie',
+                        data: speakerChartData,
+                        options: speakerChartOptions
+                    });
+  }
+
+</script>
+</html>
