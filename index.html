@@ -9,431 +9,92 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.bundle.min.js"></script>
+
+  <!-- Load my stylesheet -->
+  <link rel="stylesheet" href="stylesheet.css">
 </head>
 <body>
 
 <div class="container-fluid">
-  <h1>Talking Time Tracker</h1>
-
-  <form onsubmit="return tc.createTimedEntity()">
-     <div class="row">
-         <div class="col-xl-2 col-lg-3 col-med-4 col-sm-5">
-           <input type="text" class="form-control" id="newNameInput" aria-describedby="newNameHelp" placeholder="Enter unique name">
-         </div>
-         <div class="col-4">
-           <button type="button" class="btn btn-primary" id="addTimedEntityButton">Add</button>
-         </div>
-     </div>
-  </form>
-   <div class="row mt-3">
-     <div class="col-auto">
-       <button type="button" class="btn btn-warning" id="toggleTiming">Start Timing</button>
-     </div>
-     <div class="col-auto">
-       <button type="button" class="btn btn-secondary" id="noSpeakerButton">No Speaker</button>
-     </div>
-   </div>
-
-  <div id='timedEtityButtons' class='row'>
+  <div class='row mt-2 ml-1'>
+    <h1>Talking Time Tracker</h1>
   </div>
 
-  <div class="row mt-3">
-    <div class="col-sm-6 col-lg-4 col-xl-3">
-      <div class="card">
-        <div class="card-body">
-          <canvas id="speakerChartCanvas" style="height: 100%;"></canvas>
-        </div>
-      </div>
+  <ul class="nav nav-pills">
+  <li class="nav-item">
+    <a class="nav-link active" data-toggle="pill" href="#speakersTab">Speakers</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" data-toggle="pill" href="#chartsTab">Charts</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" data-toggle="pill" href="#aboutTab">About</a>
+  </li>
+</ul>
+
+<!-- Tab panes -->
+<div class="tab-content ">
+  <div class="tab-pane container active col-12" id="speakersTab">
+
+    <form onsubmit="return tc.createTimedEntity()">
+       <div class="row mt-3">
+           <div class="col-8 col-sm-6 col-md-5 col-lg-4 col-xl-2">
+             <input type="text" class="form-control" id="newNameInput" aria-describedby="newNameHelp" placeholder="Enter unique name">
+           </div>
+           <div class="col-4">
+             <button type="button" class="btn btn-primary" id="addTimedEntityButton">Add</button>
+           </div>
+       </div>
+    </form>
+     <div class="row mt-3">
+       <div class="col-auto">
+         <button type="button" class="btn btn-warning" id="toggleTiming">Start Timing</button>
+       </div>
+       <div class="col-auto">
+         <button type="button" class="btn btn-secondary" id="noSpeakerButton">No Speaker</button>
+       </div>
+     </div>
+
+    <div id='timedEtityButtons' class='row'>
     </div>
-    <div class="col-sm-6 col-lg-4 col-xl-3">
-      <div class="card">
-        <div class="card-body">
-          <canvas id="genderChartCanvas" style="height: 100%;"></canvas>
-        </div>
-      </div>
-    </div>
+
   </div>
+  <div class="tab-pane container fade col-12" id="chartsTab">
 
-</body>
-<script>
-
-  class TimedEntity {
-
-    // One of the people/things we are tracking the talking time of
-
-    constructor(name) {
-
-      this.name = cleanName(name);
-      this.displayName = name;
-      this.gender = '';
-      this.owner = null;
-      this.ticksActive = 0; // This will hold the number of seconds this entity has talked
-
-    };
-
-    setOwner(owner) {
-
-      // Owner should be a reference to a TimerControl object that has added
-      // this entity to its timedEntities list
-
-      this.owner = owner
-
-    }
-
-    changeName(newName) {
-
-      // This should only be called through TimingControl.renameEntity, which
-      // checks that newName isn't already in use.
-
-      this.displayName = newName;
-      this.name = cleanName(newName);
-
-
-    }
-
-    addGender(gender) {
-
-      this.gender = gender;
-    }
-
-    remove() {
-
-      // Ask the owner to remove this instance
-
-      this.owner.removeTimedEntity(this);
-
-    }
-
-    addTicks(num) {
-
-      this.ticksActive += num;
-      this.updateDisplay();
-
-    }
-
-    makeActive() {
-
-      // This will stop timing all other entities owned by this entity's owner
-      // and change their appearance
-
-      this.owner.setActiveEntity(this);
-      $(".btn-success").removeClass('btn-success').addClass('btn-secondary');
-      $("#"+this.name+'MainButton').removeClass('btn-secondary').addClass('btn-success');
-      $("#"+this.name+'DropdownButton').removeClass('btn-secondary').addClass('btn-success');
-
-    }
-
-    createButton() {
-
-      // Creates the button that will be used to toggle the entity and adds
-      // the button to the timedEtityButtons div
-
-      var html = `
-        <div class="btn-group col-sm-6 col-med-6 col-lg-4 col-xl-3 mt-3">
-          <button type="button" class="btn btn-secondary" id="${this.name}MainButton">
-            <H4>${this.displayName}</H4>
-            <div id='${this.name}TimeField'></div>
-          </button>
-          <button type="button" class="btn dropdown-toggle dropdown-toggle-split col-2" data-toggle="dropdown" id="${this.name}DropdownButton" style="background-color: ${primaryChartColors[primaryChartColorIterator]}"></button>
-          <div class="dropdown-menu dropdown-menu-right col-11">
-            <form onsubmit="return tc.renameEntity('${this.name}')">
-              <div class="row">
-                <div class="col-8">
-                  <input type="text" class="form-control" id="${this.name}NewNameInput" aria-describedby="newNameHelp" placeholder="Rename">
-                </div>
-                <div class="col-4">
-                  <button class='btn-primary w-100 h-100' onclick="tc.renameEntity('${this.name}')">Rename</button>
-                </div>
-              </div>
-            </form>
-            <form onsubmit="return tc.addGender('${this.name}')">
-              <div class="row mt-2">
-                <div class="col-8">
-                  <input type="text" class="form-control" id="${this.name}GenderInput" aria-describedby="newNameHelp" placeholder="Add gender" value="${this.gender}">
-                </div>
-                <div class="col-4">
-                  <button class='btn-primary w-100 h-100' onclick="tc.addGender('${this.name}')">Set</button>
-                </div>
-              </div>
-            </form>
-            <div class="dropdown-divider"></div>
-            <button class="btn-danger h-100" id="${this.name}RemoveButton">Remove</button>
+    <div class="row mt-3">
+      <div class="col-sm-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <div class="card-body">
+            <canvas id="speakerChartCanvas" style="height: 100%;"></canvas>
           </div>
         </div>
-        `
-
-      $('#timedEtityButtons').append(html);
-      this.updateDisplay(); // Add the current time
-      primaryChartColorIterator += 1;
-      // Register an event listener to make this the active entity when clicked
-      var t = this;
-      $("#"+this.name+"MainButton").click(function(){t.makeActive();})
-      $("#"+this.name+"RemoveButton").click(function(){t.remove();})
-
-    }
-
-    updateDisplay() {
-
-      // Format the seconds appropriately and push this new string to the
-      // div corresponding to this entity's time display.
-
-      var date = new Date(this.ticksActive * 1000).toISOString().substr(11, 8);
-      document.getElementById(this.name+"TimeField").innerHTML = date;
-
-    }
-  }
-
-  class TimerControl {
-
-    // Handles keeping track of what is being timed
-
-    constructor() {
-
-      this.timedEntities = []; // Will hold list of entities being tracked
-      this.activeEntity = null; // This is the entity we are currently timing
-      this.intervalTimer = null; // Will hold reference after we start setInterval
-      this.chartTimer = null; // Will hold referenec to the setInterval for updating the charts
-      this.timingActive = false; // Are we currently running the timer?
-      // Store the timestamp in ms of the last time a tick happened in case the
-      // app gets backgrounded and JS execution stops. Can then add in the right
-      // number of secconds after
-      this.lastTickTime = -1;
-
-    };
-
-    getEntityByName(name) {
-
-      for (var i=0; i < this.timedEntities.length; i++) {
-        if(this.timedEntities[i].name == name) {
-          return this.timedEntities[i];
-        }
-      }
-    }
-
-
-    createTimedEntity() {
-
-      var displayName = document.getElementById("newNameInput").value;
-      var cleanedName = cleanName(displayName);
-
-      if (cleanedName != '') {
-
-        var nameTaken = false;
-        for (var i=0; i < this.timedEntities.length; i++) {
-            if(this.timedEntities[i].name == cleanedName) {
-              nameTaken = true;
-            }
-        }
-        if (!nameTaken) {
-          var entity = new TimedEntity(displayName);
-          entity.createButton();
-          this.addTimedEntity(entity);
-          document.getElementById("newNameInput").value = '';
-        }
-      }
-
-      return false; // Stop the form from submitting
-
-    }
-
-    addTimedEntity(entity) {
-
-      // Adds an entity created separately from this TimerControl.
-        // NOTE: If you add directly, you're responsible for checking for name
-      // conflicts. Better to use createTimedEntity()
-
-      entity.setOwner(this);
-      this.timedEntities.push(entity);
-
-    }
-
-    removeTimedEntity(entity) {
-
-      for (var i=0; i < this.timedEntities.length; i++) {
-        if(this.timedEntities[i] == entity) {
-          this.timedEntities.splice(i, 1);
-          if (this.activeEntity == entity) {
-            this.activeEntity = null;
-          }
-        }
-      }
-
-      this.rebuildButtons();
-      this.updateCharts();
-    }
-
-    addGender(entityName) {
-
-      var gender = document.getElementById(entityName+'GenderInput').value;
-      this.getEntityByName(entityName).addGender(gender);
-
-      $(`#${entityName}DropdownButton`).dropdown('hide');
-
-      return false; // Stop the page from reloading on form submit.
-    }
-
-    rebuildButtons() {
-
-      // Clear the div holding the buttons and rebuild it
-
-      primaryChartColorIterator = 0; // Reset before we rebuild the buttons
-
-      document.getElementById('timedEtityButtons').innerHTML = '';
-      for (var i=0; i < this.timedEntities.length; i++) {
-          this.timedEntities[i].createButton();
-          if (this.activeEntity) {
-            if (this.activeEntity == this.timedEntities[i]) {
-              this.timedEntities[i].makeActive(); // To restore its color
-            }
-          }
-      }
-    }
-
-    setActiveEntity(entity) {
-
-      if (entity == null) { // We've pressed the No Speaker button
-        $(".btn-success").removeClass('btn-success').addClass('btn-secondary');
-        $("#noSpeakerButton").removeClass("btn-secondary").addClass('btn-success');
-      }
-
-      this.activeEntity = entity;
-
-    }
-
-    renameEntity(existingName) {
-
-      var displayName = document.getElementById(existingName+'NewNameInput').value;
-      var cleanedName = cleanName(displayName);
-
-      if (cleanedName != "") {
-
-        // Find the entity in the list and also check that the new name isn't
-        // already being used
-        var match_i = null;
-        var nameTaken = false;
-        for (var i=0; i < this.timedEntities.length; i++) {
-            if(this.timedEntities[i].name == existingName) {
-              match_i = i;
-            }
-            if(this.timedEntities[i].name == cleanedName) {
-              nameTaken = true;
-            }
-        }
-        if (nameTaken == false) {
-          this.timedEntities[match_i].changeName(displayName);
-          this.rebuildButtons();
-        } else {
-          console.log("tc.renameEntity: Error: name in use!")
-        }
-      }
-
-      return false; // Stop the form from submitting
-    }
-
-    tick() {
-
-      // Called every 1 second
-
-      var ticksToAdd = 1;
-      let nowTime = new Date().getTime();
-      if ((this.lastTickTime != -1) && (nowTime - this.lastTickTime) > 2000) { // ms. Allow for a little slop here to account for inprecise timing
-        ticksToAdd = (nowTime - this.lastTickTime)/1000;
-      }
-      this.lastTickTime = nowTime;
-
-      if(this.activeEntity) {
-        this.activeEntity.addTicks(ticksToAdd);
-      }
-    }
-
-    updateCharts() {
-    this.updateSpeakerChart();
-    this.updateGenderChart();
-    }
-
-    updateSpeakerChart() {
-
-      var names = [];
-      var ticks = [];
-
-      for (var i=0; i < this.timedEntities.length; i++) {
-        var entity = this.timedEntities[i];
-        names.push(entity.displayName);
-        ticks.push(entity.ticksActive);
-      }
-
-      speakerChart.data.labels = names;
-      speakerChart.data.datasets[0].data = ticks;
-
-      speakerChart.update();
-    }
-
-    updateGenderChart() {
-
-      var genders_ticks = {}; // The number of speaking seconds per gender
-      var genders_counts = {}; // The number of entities per gender
-
-      for (var i=0; i < this.timedEntities.length; i++) {
-        var entity = this.timedEntities[i];
-        var gender = entity.gender;
-
-        if (gender != '') {
-          if (gender in genders_ticks) {
-            genders_ticks[gender] += entity.ticksActive;
-            genders_counts[gender] += 1;
-          } else {
-            genders_ticks[gender] = entity.ticksActive;
-            genders_counts[gender] = 1;
-          }
-
-        }
-      }
-      var labels = Object.keys(genders_ticks);
-      var ticks = [];
-      var counts = [];
-      for (var i=0; i<labels.length; i++) {
-        ticks.push(genders_ticks[labels[i]]);
-        counts.push(genders_counts[labels[i]]);
-      }
-
-      genderChart.data.labels = labels;
-      genderChart.data.datasets[0].data = ticks;
-      genderChart.data.datasets[1].data = counts;
-
-      genderChart.update();
-    }
-
-    toggleTiming() {
-      if (this.timingActive == false) {
-        this.startTiming();
-        this.timingActive = true;
-        $('#toggleTiming').removeClass('btn-warning').addClass('btn-danger');
-        $('#toggleTiming').html('Pause Timing');
-      } else {
-        this.stopTiming();
-        this.timingActive = false;
-        $('#toggleTiming').removeClass('btn-danger').addClass('btn-warning');
-        $('#toggleTiming').html('Start Timing');
-      }
-    }
-
-    startTiming() {
-
-      var t = this; // Need this because the scope of setInterval is Window
-      this.intervalTimer = setInterval(function(){t.tick();}, 1000);
-      this.chartTimer = setInterval(function(){t.updateCharts();}, 5000);
-    }
-
-    stopTiming() {
-
-      clearInterval(this.intervalTimer);
-      clearInterval(this.chartTimer);
-
-      this.lastTickTime = -1; // So that we don't accidentally add a bunch of time when we restart
-
-    }
-
-  }
+      </div>
+      <div class="col-sm-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <div class="card-body">
+            <canvas id="genderChartCanvas" style="height: 100%;"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-pane container col-12" id="aboutTab">
+    <div class='row mt-3 col-12'>
+      <H2>Who's speaking matters.</H2>
+    </div>
+    <div class='row col-md-8 col-lg-6 col-xl-4'>
+      <p>Research shows that the more diverse a meeting is, the more successful the outcome will be. But it's not enough to simply have a wide range of attendees—there must be diversity among those actually contributing. That's where <b>Talking Time Tracker</b> comes in.</p>
+    </div>
+
+  </div>
+</div>
+</body>
+
+<!-- Load the external Javascript files -->
+<script src="TimedEntity.js"></script>
+<script src="TimerControl.js"></script>
+<script>
 
   function cleanName(name) {
 

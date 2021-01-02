@@ -1,0 +1,10 @@
+/* These two changes fix chart.js not rendering inside of tabs  */
+.tab-content>.tab-pane {
+    display: block;
+    height: 0;
+    overflow: hidden;
+}
+.tab-content>.tab-pane.active {
+    height: auto;
+    overflow: visible;
+}
