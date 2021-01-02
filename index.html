@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Bootstrap Example</title>
+  <title>Talking Time Tracker</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
@@ -13,34 +13,39 @@
 <body>
 
 <div class="container-fluid">
-  <h1>TalkingTimeTracker</h1>
+  <h1>Talking Time Tracker</h1>
 
   <form onsubmit="return tc.createTimedEntity()">
      <div class="row">
-       <div class="col-auto">
-         <input type="text" class="form-control" id="newNameInput" aria-describedby="newNameHelp" placeholder="Enter unique name">
-       </div>
-       <div class="col-auto">
-         <button type="button" class="btn btn-primary" id="addTimedEntityButton">Add</button>
-       </div>
-       <div class="col-auto">
-         <button type="button" class="btn btn-warning" id="toggleTiming">Start Timing</button>
-       </div>
+         <div class="col-xl-2 col-lg-3 col-med-4 col-sm-5">
+           <input type="text" class="form-control" id="newNameInput" aria-describedby="newNameHelp" placeholder="Enter unique name">
+         </div>
+         <div class="col-4">
+           <button type="button" class="btn btn-primary" id="addTimedEntityButton">Add</button>
+         </div>
      </div>
   </form>
+   <div class="row mt-3">
+     <div class="col-auto">
+       <button type="button" class="btn btn-warning" id="toggleTiming">Start Timing</button>
+     </div>
+     <div class="col-auto">
+       <button type="button" class="btn btn-secondary" id="noSpeakerButton">No Speaker</button>
+     </div>
+   </div>
 
-  <div id='timedEtityButtons'>
+  <div id='timedEtityButtons' class='row'>
   </div>
 
-  <div class="row">
-    <div class="col-sm-6">
+  <div class="row mt-3">
+    <div class="col-sm-6 col-lg-4 col-xl-3">
       <div class="card">
         <div class="card-body">
           <canvas id="speakerChartCanvas" style="height: 100%;"></canvas>
         </div>
       </div>
     </div>
-    <div class="col-sm-6">
+    <div class="col-sm-6 col-lg-4 col-xl-3">
       <div class="card">
         <div class="card-body">
           <canvas id="genderChartCanvas" style="height: 100%;"></canvas>
@@ -124,21 +129,35 @@
       // the button to the timedEtityButtons div
 
       var html = `
-        <div class="btn-group col-sm-5 mt-3">
+        <div class="btn-group col-sm-6 col-med-6 col-lg-4 col-xl-3 mt-3">
           <button type="button" class="btn btn-secondary" id="${this.name}MainButton">
             <H4>${this.displayName}</H4>
             <div id='${this.name}TimeField'></div>
           </button>
-          <button type="button" class="btn dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" id="${this.name}DropdownButton" style="background-color: ${primaryChartColors[primaryChartColorIterator]}"></button>
-          <div class="dropdown-menu">
+          <button type="button" class="btn dropdown-toggle dropdown-toggle-split col-2" data-toggle="dropdown" id="${this.name}DropdownButton" style="background-color: ${primaryChartColors[primaryChartColorIterator]}"></button>
+          <div class="dropdown-menu dropdown-menu-right col-11">
             <form onsubmit="return tc.renameEntity('${this.name}')">
-            <input type="text" class="form-control" id="${this.name}NewNameInput" aria-describedby="newNameHelp" placeholder="Rename">
+              <div class="row">
+                <div class="col-8">
+                  <input type="text" class="form-control" id="${this.name}NewNameInput" aria-describedby="newNameHelp" placeholder="Rename">
+                </div>
+                <div class="col-4">
+                  <button class='btn-primary w-100 h-100' onclick="tc.renameEntity('${this.name}')">Rename</button>
+                </div>
+              </div>
             </form>
             <form onsubmit="return tc.addGender('${this.name}')">
-            <input type="text" class="form-control" id="${this.name}GenderInput" aria-describedby="newNameHelp" placeholder="Add gender" value="${this.gender}">
+              <div class="row mt-2">
+                <div class="col-8">
+                  <input type="text" class="form-control" id="${this.name}GenderInput" aria-describedby="newNameHelp" placeholder="Add gender" value="${this.gender}">
+                </div>
+                <div class="col-4">
+                  <button class='btn-primary w-100 h-100' onclick="tc.addGender('${this.name}')">Set</button>
+                </div>
+              </div>
             </form>
             <div class="dropdown-divider"></div>
-            <a class="dropdown-item" id="${this.name}RemoveButton">Remove</a>
+            <button class="btn-danger h-100" id="${this.name}RemoveButton">Remove</button>
           </div>
         </div>
         `
@@ -248,6 +267,8 @@
       var gender = document.getElementById(entityName+'GenderInput').value;
       this.getEntityByName(entityName).addGender(gender);
 
+      $(`#${entityName}DropdownButton`).dropdown('hide');
+
       return false; // Stop the page from reloading on form submit.
     }
 
@@ -269,6 +290,11 @@
     }
 
     setActiveEntity(entity) {
+
+      if (entity == null) { // We've pressed the No Speaker button
+        $(".btn-success").removeClass('btn-success').addClass('btn-secondary');
+        $("#noSpeakerButton").removeClass("btn-secondary").addClass('btn-success');
+      }
 
       this.activeEntity = entity;
 
@@ -421,12 +447,13 @@
 
   // Define the colors that will represent the timedEntities in the chart. Duplicate this to handle a large number of entities.
   var primaryChartColorIterator = 0; // increments to iterate the colors as we add new entities.
-  var primaryChartColors = new Array(100).fill(['#5FAD56', '#FF8360', '#3E7CB1', '#BD619E', '#F4D35E', '#34ADA7', '#8C9051', '#F69A65']).flat();
+  var primaryChartColors = new Array(100).fill(['#3E7CB1', '#FF8360', '#BD619E', '#4C230A', '#5FAD56', '#F4D35E', '#34ADA7', '#8C9051', '#2C517C', '#D12E25', '#7E3F74', '#427046', '#BE972E', '#246C75', '#5C5E3F', '#9BBEDC', '#FFC1B0', '#DEB0CF', '#E78244', '#AFD6AB', '#F9E9AE', '#91DEDA', '#C9CCA4']).flat();
 
   var tc = new TimerControl();
 
   $('#addTimedEntityButton').click(function() {tc.createTimedEntity();})
   $('#toggleTiming').click(function() {tc.toggleTiming();})
+  $('#noSpeakerButton').click(function() {tc.setActiveEntity(null);})
 
   var speakerChartOptions = {
   cutoutPercentage: 75,
