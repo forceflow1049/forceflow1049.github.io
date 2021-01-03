@@ -82,7 +82,11 @@ class TimerControl {
     var gender = document.getElementById(entityName+'GenderInput').value;
     this.getEntityByName(entityName).addGender(gender);
 
-      $(`#${entityName}DropdownButton`).dropdown('hide');
+    $(`#${entityName}DropdownButton`).dropdown('hide');
+
+    // Hide the hint
+    document.getElementById("genderChartHint").style.display = 'none';
+    this.updateCharts();
 
     return false; // Stop the page from reloading on form submit.
   }
@@ -237,6 +241,10 @@ class TimerControl {
     var t = this; // Need this because the scope of setInterval is Window
     this.intervalTimer = setInterval(function(){t.tick();}, 1000);
     this.chartTimer = setInterval(function(){t.updateCharts();}, 5000);
+
+    // Hide the hint
+    document.getElementById("speakerChartHint").style.display = 'none';
+    this.updateCharts();
   }
 
   stopTiming() {
