@@ -9,6 +9,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.bundle.min.js"></script>
+  <script src="https://kit.fontawesome.com/ada707bfc0.js" crossorigin="anonymous"></script>
 
   <!-- Load my stylesheet -->
   <link rel="stylesheet" href="stylesheet.css">
@@ -71,6 +72,12 @@
             </div>
             <canvas id="speakerChartCanvas" style="height: 100%;"></canvas>
           </div>
+          <div class="card-footer text-muted">
+            <i class="fas fa-file-download" style="font-size: 24px; color: #0275d8;" onclick="tc.downloadChart('speakerChart')"></i>
+            <div id="speakerChartRenderDiv" style="height: 0px; overflow: hidden;">
+              <canvas id="speakerChartRenderCanvas" style="height: 1080px; width: 1920px;"></canvas>
+            </div>
+          </div>
         </div>
       </div>
       <div class="col-sm-6 col-lg-4 col-xl-3">
@@ -82,6 +89,12 @@
               </div>
             </div>
             <canvas id="genderChartCanvas" style="height: 100%;"></canvas>
+          </div>
+          <div class="card-footer text-muted">
+            <i class="fas fa-file-download" style="font-size: 24px; color: #0275d8;" onclick="tc.downloadChart('genderChart')"></i>
+            <div id="genderChartRenderDiv" style="height: 0px; overflow: hidden;">
+              <canvas id="genderChartRenderCanvas" style="height: 1080px; width: 1920px;"></canvas>
+            </div>
           </div>
         </div>
       </div>
@@ -115,6 +128,18 @@
     return name;
   }
 
+  function fillCanvasBackgroundWithColor(canvas, color) {
+  // Get the 2D drawing context from the provided canvas.
+  const context = canvas.getContext('2d');
+
+  context.save();
+  context.globalCompositeOperation = 'destination-over';
+  context.fillStyle = color;
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  context.restore();
+}
+
   // Define the colors that will represent the timedEntities in the chart. Duplicate this to handle a large number of entities.
   var primaryChartColorIterator = 0; // increments to iterate the colors as we add new entities.
   var primaryChartColors = new Array(100).fill(['#3E7CB1', '#FF8360', '#BD619E', '#4C230A', '#5FAD56', '#F4D35E', '#34ADA7', '#8C9051', '#2C517C', '#D12E25', '#7E3F74', '#427046', '#BE972E', '#246C75', '#5C5E3F', '#9BBEDC', '#FFC1B0', '#DEB0CF', '#E78244', '#AFD6AB', '#F9E9AE', '#91DEDA', '#C9CCA4']).flat();
@@ -130,7 +155,7 @@
   responsive: true,
   maintainAspectRatio: false,
   title: {
-    text: "Speaker",
+    text: "Speakers",
     display: true,
     position: 'bottom',
     fontSize: 25,
@@ -159,6 +184,38 @@
    },
   };
 
+  var speakerChartRenderOptions = {
+    cutoutPercentage: 75,
+    responsive: false,
+    maintainAspectRatio: false,
+    layout: {
+      padding: {
+        left: 100,
+        right: 100,
+        top: 10,
+        bottom: 100
+      }
+    },
+    title: {
+      text: "Speakers",
+      display: true,
+      position: 'top',
+      fontSize: 65,
+      padding: 20,
+    },
+    legend: {
+      display: true,
+      position: 'right',
+      align: 'center',
+      labels:{
+       pointStyle: 'circle',
+       usePointStyle: true,
+       fontSize: 35,
+       padding: 25,
+      },
+    },
+  };
+
   var speakerChartData = {
       labels: ['No speakers yet'],
       datasets: [
@@ -172,10 +229,19 @@
 
   var speakerChartCanvas = document.getElementById("speakerChartCanvas");
   if (speakerChartCanvas) {
-    speakerChart = new Chart(speakerChartCanvas, {
+    var speakerChart = new Chart(speakerChartCanvas, {
                         type: 'pie',
                         data: speakerChartData,
                         options: speakerChartOptions
+                    });
+  }
+
+  var speakerChartRenderCanvas = document.getElementById("speakerChartRenderCanvas");
+  if (speakerChartRenderCanvas) {
+    var speakerRenderChart = new Chart(speakerChartRenderCanvas, {
+                        type: 'pie',
+                        data: speakerChartData,
+                        options: speakerChartRenderOptions
                     });
   }
 
@@ -219,6 +285,38 @@
    },
   };
 
+  var genderChartRenderOptions = {
+    cutoutPercentage: 50,
+    responsive: false,
+    maintainAspectRatio: false,
+    layout: {
+      padding: {
+        left: 100,
+        right: 100,
+        top: 10,
+        bottom: 100
+      }
+    },
+    title: {
+      text: "Gender",
+      display: true,
+      position: 'top',
+      fontSize: 65,
+      padding: 20,
+    },
+    legend: {
+      display: true,
+      position: 'right',
+      align: 'center',
+      labels:{
+       pointStyle: 'circle',
+       usePointStyle: true,
+       fontSize: 35,
+       padding: 25,
+      },
+    },
+  };
+
   var genderChartData = {
       labels: ['No speakers yet'],
       datasets: [
@@ -237,10 +335,20 @@
 
   var genderChartCanvas = document.getElementById("genderChartCanvas");
   if (speakerChartCanvas) {
-    genderChart = new Chart(genderChartCanvas, {
+    var genderChart = new Chart(genderChartCanvas, {
                         type: 'pie',
                         data: genderChartData,
                         options: genderChartOptions
+                    });
+  }
+
+  // This holds the canvas for the hidden chart we use to render out a PNG
+  var genderChartRenderCanvas = document.getElementById("genderChartRenderCanvas");
+  if (genderChartRenderCanvas) {
+    var genderRenderChart = new Chart(genderChartRenderCanvas, {
+                        type: 'pie',
+                        data: genderChartData,
+                        options: genderChartRenderOptions
                     });
   }
 

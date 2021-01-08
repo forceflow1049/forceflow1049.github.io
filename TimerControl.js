@@ -170,7 +170,9 @@ class TimerControl {
   this.updateGenderChart();
   }
 
-  updateSpeakerChart() {
+  updateSpeakerChart(render=false) {
+
+    // render=true indicates we are creating a PNG for download
 
     var names = [];
     var ticks = [];
@@ -181,13 +183,22 @@ class TimerControl {
       ticks.push(entity.ticksActive);
     }
 
-    speakerChart.data.labels = names;
-    speakerChart.data.datasets[0].data = ticks;
+    if (render == false) {
+      speakerChart.data.labels = names;
+      speakerChart.data.datasets[0].data = ticks;
 
-    speakerChart.update();
+      speakerChart.update();
+    } else {
+      speakerRenderChart.data.labels = names;
+      speakerRenderChart.data.datasets[0].data = ticks;
+
+      speakerRenderChart.update(0);
+    }
   }
 
-  updateGenderChart() {
+  updateGenderChart(render=false) {
+
+    // render=true indicates we are creating a PNG for download
 
     var genders_ticks = {}; // The number of speaking seconds per gender
     var genders_counts = {}; // The number of entities per gender
@@ -215,11 +226,44 @@ class TimerControl {
       counts.push(genders_counts[labels[i]]);
     }
 
-    genderChart.data.labels = labels;
-    genderChart.data.datasets[0].data = ticks;
-    genderChart.data.datasets[1].data = counts;
+    if (render == false) {
+      genderChart.data.labels = labels;
+      genderChart.data.datasets[0].data = ticks;
+      genderChart.data.datasets[1].data = counts;
 
-    genderChart.update();
+      genderChart.update();
+    } else {
+      genderRenderChart.data.labels = labels;
+      genderRenderChart.data.datasets[0].data = ticks;
+      genderRenderChart.data.datasets[1].data = counts;
+
+      genderRenderChart.update(0);
+    }
+
+  }
+
+  downloadChart(chart) {
+
+    if (chart == 'speakerChart') {
+      this.updateSpeakerChart(true);
+      // Color the background of the plot
+      fillCanvasBackgroundWithColor(document.getElementById('speakerChartRenderCanvas'), 'white');
+      // save as image
+      var link = document.createElement('a');
+      link.href = speakerRenderChart.toBase64Image();
+      link.download = 'speaker_chart.png';
+      link.click();
+    } else if (chart == "genderChart") {
+      this.updateGenderChart(true);
+      // Color the background of the plot
+      fillCanvasBackgroundWithColor(document.getElementById('genderChartRenderCanvas'), 'white');
+      // save as image
+      var link = document.createElement('a');
+      link.href = genderRenderChart.toBase64Image();
+      link.download = 'gender_chart.png';
+      link.click();
+    }
+
   }
 
   toggleTiming() {
