@@ -244,25 +244,27 @@ class TimerControl {
 
   downloadChart(chart) {
 
+    var canvas;
+    var filename;
+
     if (chart == 'speakerChart') {
       this.updateSpeakerChart(true);
+      canvas = document.getElementById('speakerChartRenderCanvas');
+      filename = 'speaker_chart.png'
       // Color the background of the plot
-      fillCanvasBackgroundWithColor(document.getElementById('speakerChartRenderCanvas'), 'white');
-      // save as image
-      var link = document.createElement('a');
-      link.href = speakerRenderChart.toBase64Image();
-      link.download = 'speaker_chart.png';
-      link.click();
+      fillCanvasBackgroundWithColor(canvas, 'white');
     } else if (chart == "genderChart") {
       this.updateGenderChart(true);
+      canvas = document.getElementById('genderChartRenderCanvas');
+      filename = "gender_chart.png"
       // Color the background of the plot
-      fillCanvasBackgroundWithColor(document.getElementById('genderChartRenderCanvas'), 'white');
-      // save as image
-      var link = document.createElement('a');
-      link.href = genderRenderChart.toBase64Image();
-      link.download = 'gender_chart.png';
-      link.click();
+      fillCanvasBackgroundWithColor(canvas, 'white');
     }
+
+    // save as image
+    canvas.toBlob(function(blob) {
+      saveAs(blob, filename);
+    });
 
   }
 
