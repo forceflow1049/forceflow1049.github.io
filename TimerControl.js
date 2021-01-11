@@ -236,6 +236,9 @@ class TimerControl {
 
       genderChart.update();
     } else {
+      var canvas = document.getElementById('genderChartRenderCanvas');
+      canvas.width = 3840;
+      canvas.height = 2160;
       genderRenderChart.data.labels = labels;
       genderRenderChart.data.datasets[0].data = ticks;
       genderRenderChart.data.datasets[1].data = counts;
