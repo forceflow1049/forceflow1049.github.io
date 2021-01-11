@@ -264,7 +264,7 @@ class TimerControl {
     // save as image
 
     canvas.toBlob(function(blob) {
-      console.log(blob)
+      console.log(canvas.width, canvas.height);
       saveAs(blob, filename);
     }, 'image/png');
 
