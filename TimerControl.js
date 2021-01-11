@@ -262,7 +262,9 @@ class TimerControl {
     }
 
     // save as image
+
     canvas.toBlob(function(blob) {
+      console.log(blob)
       saveAs(blob, filename);
     }, 'image/png');
 
