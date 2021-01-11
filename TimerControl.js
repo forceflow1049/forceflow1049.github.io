@@ -190,8 +190,8 @@ class TimerControl {
       speakerChart.update();
     } else {
       var canvas = document.getElementById('speakerChartRenderCanvas');
-      canvas.width = 1920;
-      canvas.height = 1080;
+      canvas.width = 3840;
+      canvas.height = 2160;
       speakerRenderChart.data.labels = names;
       speakerRenderChart.data.datasets[0].data = ticks;
 
