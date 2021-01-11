@@ -151,6 +151,11 @@
   $('#toggleTiming').click(function() {tc.toggleTiming();})
   $('#noSpeakerButton').click(function() {tc.setActiveEntity(null);})
 
+  // Intercept navigation away to prevent data loss
+  window.onbeforeunload = function() {
+    return "";
+  }
+
   var speakerChartOptions = {
   cutoutPercentage: 75,
   responsive: true,
