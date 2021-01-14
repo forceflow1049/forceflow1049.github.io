@@ -117,6 +117,7 @@
 <!-- Load the external Javascript files -->
 <script src="TimedEntity.js"></script>
 <script src="TimerControl.js"></script>
+<script src="TimingChart.js"></script>
 <script>
 
   function cleanName(name) {
@@ -156,207 +157,23 @@
     return "";
   }
 
-  var speakerChartOptions = {
-  cutoutPercentage: 75,
-  responsive: true,
-  maintainAspectRatio: false,
-  title: {
-    text: "Speakers",
-    display: true,
-    position: 'bottom',
-    fontSize: 25,
-    padding: 1,
-  },
-  legend: {
-    display: false,
-    position:'bottom',
-    labels:{
-     pointStyle:'circle',
-     usePointStyle:true,
-     fontSize: 20,
-    },
-  },
-  tooltips: {
-    enabled: true,
-    bodyFontSize: 20,
-    callbacks: {
-      label: function(tooltipItems, data) {
-        var i = tooltipItems.index
-        var labels = [];
-          var dateStr = new Date(data.datasets[0].data[i] * 1000).toISOString().substr(11, 8);
-          labels.push(data.labels[i] + ": " + dateStr);
-        return labels;}
-    },
-   },
-  };
+  // Set up the charts
 
-  var speakerChartRenderOptions = {
-    cutoutPercentage: 75,
-    responsive: false,
-    maintainAspectRatio: false,
-    layout: {
-      padding: {
-        left: 100,
-        right: 100,
-        top: 10,
-        bottom: 100
-      }
-    },
-    title: {
-      text: "Speakers",
-      display: true,
-      position: 'top',
-      fontSize: 65,
-      padding: 20,
-    },
-    legend: {
-      display: true,
-      position: 'right',
-      align: 'center',
-      labels:{
-       pointStyle: 'circle',
-       usePointStyle: true,
-       fontSize: 35,
-       padding: 25,
-      },
-    },
-  };
-
-  var speakerChartData = {
-      labels: ['No speakers yet'],
-      datasets: [
-        {
-          backgroundColor: primaryChartColors,
-          borderWidth: 1,
-          data: [0]
-        }
-      ]
-  };
-
+  var speakerChart = new TimingCHart('non-nested', 'display', 'Speaker');
   var speakerChartCanvas = document.getElementById("speakerChartCanvas");
-  if (speakerChartCanvas) {
-    var speakerChart = new Chart(speakerChartCanvas, {
-                        type: 'pie',
-                        data: speakerChartData,
-                        options: speakerChartOptions
-                    });
-  }
+  speakerChart.addToCanvas(speakerChartCanvas);
 
+  var speakerRenderChart = new TimingCHart('non-nested', 'render', 'Speaker');
   var speakerChartRenderCanvas = document.getElementById("speakerChartRenderCanvas");
-  if (speakerChartRenderCanvas) {
-    var speakerRenderChart = new Chart(speakerChartRenderCanvas, {
-                        type: 'pie',
-                        data: speakerChartData,
-                        options: speakerChartRenderOptions
-                    });
-  }
+  speakerRenderChart.addToCanvas(speakerChartRenderCanvas);
 
-  var genderChartOptions = {
-  cutoutPercentage: 50,
-  responsive: true,
-  maintainAspectRatio: false,
-  title: {
-    text: "Gender",
-    display: true,
-    position: 'bottom',
-    fontSize: 25,
-    padding: 1,
-  },
-  legend: {
-    display: false,
-    position:'bottom',
-    labels:{
-     pointStyle:'circle',
-     usePointStyle:true,
-     fontSize: 20,
-    },
-  },
-  tooltips: {
-    enabled: true,
-    bodyFontSize: 20,
-    callbacks: {
-      label: function(tooltipItems, data) {
-        var i = tooltipItems.index
-        var labels = [];
-        if (tooltipItems.datasetIndex == 0) { // Tooltip is speaking time
-          var dateStr = new Date(data.datasets[0].data[i] * 1000).toISOString().substr(11, 8);
-          labels.push(data.labels[i] + ": " + dateStr);
-        } else {
-          var dateStr = data.datasets[1].data[i];
-          labels.push(data.labels[i] + ": " + dateStr);
-        }
-
-        return labels;}
-    },
-   },
-  };
-
-  var genderChartRenderOptions = {
-    cutoutPercentage: 50,
-    responsive: false,
-    maintainAspectRatio: false,
-    layout: {
-      padding: {
-        left: 100,
-        right: 100,
-        top: 10,
-        bottom: 100
-      }
-    },
-    title: {
-      text: "Gender",
-      display: true,
-      position: 'top',
-      fontSize: 65,
-      padding: 20,
-    },
-    legend: {
-      display: true,
-      position: 'right',
-      align: 'center',
-      labels:{
-       pointStyle: 'circle',
-       usePointStyle: true,
-       fontSize: 35,
-       padding: 25,
-      },
-    },
-  };
-
-  var genderChartData = {
-      labels: ['No speakers yet'],
-      datasets: [
-        { // This one holds the speaking time
-          backgroundColor: primaryChartColors,
-          borderWidth: 1,
-          data: [0]
-        },
-        { // This one holds the number of speakers
-          backgroundColor: primaryChartColors,
-          borderWidth: 1,
-          data: [0]
-        }
-      ]
-  };
-
+  var genderChart = new TimingCHart('nested', 'display', 'Gender');
   var genderChartCanvas = document.getElementById("genderChartCanvas");
-  if (speakerChartCanvas) {
-    var genderChart = new Chart(genderChartCanvas, {
-                        type: 'pie',
-                        data: genderChartData,
-                        options: genderChartOptions
-                    });
-  }
+  genderChart.addToCanvas(genderChartCanvas);
 
-  // This holds the canvas for the hidden chart we use to render out a PNG
+  var genderRenderChart = new TimingCHart('nested', 'render', 'Gender');
   var genderChartRenderCanvas = document.getElementById("genderChartRenderCanvas");
-  if (genderChartRenderCanvas) {
-    var genderRenderChart = new Chart(genderChartRenderCanvas, {
-                        type: 'pie',
-                        data: genderChartData,
-                        options: genderChartRenderOptions
-                    });
-  }
+  genderRenderChart.addToCanvas(genderChartRenderCanvas);
 
 </script>
 </html>

@@ -166,86 +166,8 @@ class TimerControl {
   }
 
   updateCharts() {
-  this.updateSpeakerChart();
-  this.updateGenderChart();
-  }
-
-  updateSpeakerChart(render=false) {
-
-    // render=true indicates we are creating a PNG for download
-
-    var names = [];
-    var ticks = [];
-
-    for (var i=0; i < this.timedEntities.length; i++) {
-      var entity = this.timedEntities[i];
-      names.push(entity.displayName);
-      ticks.push(entity.ticksActive);
-    }
-
-    if (render == false) {
-      speakerChart.data.labels = names;
-      speakerChart.data.datasets[0].data = ticks;
-
-      speakerChart.update();
-    } else {
-      var canvas = document.getElementById('speakerChartRenderCanvas');
-      canvas.width = 3840;
-      canvas.height = 2160;
-      speakerRenderChart.data.labels = names;
-      speakerRenderChart.data.datasets[0].data = ticks;
-
-      speakerRenderChart.update(0);
-    }
-  }
-
-  updateGenderChart(render=false) {
-
-    // render=true indicates we are creating a PNG for download
-
-    var genders_ticks = {}; // The number of speaking seconds per gender
-    var genders_counts = {}; // The number of entities per gender
-
-    for (var i=0; i < this.timedEntities.length; i++) {
-      var entity = this.timedEntities[i];
-      var gender = entity.gender;
-
-      if (gender != '') {
-        if (gender in genders_ticks) {
-          genders_ticks[gender] += entity.ticksActive;
-          genders_counts[gender] += 1;
-        } else {
-          genders_ticks[gender] = entity.ticksActive;
-          genders_counts[gender] = 1;
-        }
-
-      }
-    }
-    var labels = Object.keys(genders_ticks);
-    var ticks = [];
-    var counts = [];
-    for (var i=0; i<labels.length; i++) {
-      ticks.push(genders_ticks[labels[i]]);
-      counts.push(genders_counts[labels[i]]);
-    }
-
-    if (render == false) {
-      genderChart.data.labels = labels;
-      genderChart.data.datasets[0].data = ticks;
-      genderChart.data.datasets[1].data = counts;
-
-      genderChart.update();
-    } else {
-      var canvas = document.getElementById('genderChartRenderCanvas');
-      canvas.width = 3840;
-      canvas.height = 2160;
-      genderRenderChart.data.labels = labels;
-      genderRenderChart.data.datasets[0].data = ticks;
-      genderRenderChart.data.datasets[1].data = counts;
-
-      genderRenderChart.update(0);
-    }
-
+  speakerChart.updateChart(this.timedEntities);
+  genderChart.updateChart(this.timedEntities);
   }
 
   downloadChart(chart) {
@@ -254,13 +176,15 @@ class TimerControl {
     var filename;
 
     if (chart == 'speakerChart') {
-      this.updateSpeakerChart(true);
+      //this.updateSpeakerChart(true);
+      speakerRenderChart.updateChart(this.timedEntities);
       canvas = document.getElementById('speakerChartRenderCanvas');
       filename = 'speaker_chart.png'
       // Color the background of the plot
       fillCanvasBackgroundWithColor(canvas, 'white');
     } else if (chart == "genderChart") {
-      this.updateGenderChart(true);
+      //this.updateGenderChart(true);
+      genderRenderChart.updateChart(this.timedEntities);
       canvas = document.getElementById('genderChartRenderCanvas');
       filename = "gender_chart.png"
       // Color the background of the plot
@@ -305,7 +229,6 @@ class TimerControl {
     clearInterval(this.chartTimer);
 
     this.lastTickTime = -1; // So that we don't accidentally add a bunch of time when we restart
-
   }
 
 }
