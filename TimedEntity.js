@@ -8,7 +8,9 @@ class TimedEntity {
     this.displayName = name;
     this.gender = '';
     this.owner = null;
-    this.ticksActive = 0; // This will hold the number of seconds this entity has talked
+    this.ticksActive = 0; // This will hold the number of seconds this entity has talked\
+    this.ticksActiveThisTurn = 0; // This will hold the ticksActive since the instance became active
+    this.colorIndex = null; // Holds the primaryChartColorIterator index for the color of the button
 
   };
 
@@ -48,6 +50,7 @@ class TimedEntity {
   addTicks(num) {
 
     this.ticksActive += num;
+    this.ticksActiveThisTurn += num;
     this.updateDisplay();
 
   }
@@ -105,6 +108,7 @@ class TimedEntity {
 
     $('#timedEtityButtons').append(html);
     this.updateDisplay(); // Add the current time
+    this.colorIndex = primaryChartColorIterator;
     primaryChartColorIterator += 1;
     // Register an event listener to make this the active entity when clicked
     var t = this;

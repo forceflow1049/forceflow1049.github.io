@@ -99,6 +99,24 @@
           </div>
         </div>
       </div>
+      <div class="col-sm-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <div class="card-body">
+            <div id='timelineChartHint' style="position: absolute; z-index: 1; left: 50%; top: 40%;">
+              <!-- <div style="position: relative; left: -50%; top: -40%;">
+                <center>Add genders to your speakers to see this chart!</center>
+              </div> -->
+            </div>
+            <canvas id="timelineChartCanvas" style="height: 100%;"></canvas>
+          </div>
+          <div class="card-footer text-muted">
+            <i class="fas fa-file-download" style="font-size: 24px; color: #0275d8;" onclick="tc.downloadChart('timelineChart')"></i>
+            <div id="timelineChartRenderDiv" style="height: 0px; overflow: hidden;">
+              <canvas id="timelineChartRenderCanvas" width=3840 height=2160></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -174,6 +192,14 @@
   var genderRenderChart = new TimingCHart('nested', 'render', 'Gender');
   var genderChartRenderCanvas = document.getElementById("genderChartRenderCanvas");
   genderRenderChart.addToCanvas(genderChartRenderCanvas);
+
+  var timelineChart = new TimingCHart('non-nested', 'display', 'Timeline');
+  var timelineChartCanvas = document.getElementById("timelineChartCanvas");
+  timelineChart.addToCanvas(timelineChartCanvas);
+
+  var timelineRenderChart = new TimingCHart('non-nested', 'render', 'Timeline');
+  var timelineChartRenderCanvas = document.getElementById("timelineChartRenderCanvas");
+  timelineRenderChart.addToCanvas(timelineChartRenderCanvas);
 
 </script>
 </html>

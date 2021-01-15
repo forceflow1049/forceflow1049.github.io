@@ -147,6 +147,59 @@ class TimingCHart {
                                                                           return [];
                                                                         }
                                                                       }
+       } else if (this.name == 'Timeline') {
+         this.options.legend.labels.generateLabels = function(chart) { // This function generates the labels with the talking time. Copied and modied from the source code.
+                                                                        var data = chart.data;
+                                                                        if (data.labels.length && data.datasets.length) {
+                                                                          var labels = data.labels.map(function(label, i) {
+                                                                            var meta = chart.getDatasetMeta(0);
+                                                                            var ds = data.datasets[0];
+                                                                            var arc = meta.data[i];
+                                                                            var custom = arc && arc.custom || {};
+                                                                            var getValueAtIndexOrDefault = Chart.helpers.getValueAtIndexOrDefault;
+                                                                            var arcOpts = chart.options.elements.arc;
+                                                                            var fill = custom.backgroundColor ? custom.backgroundColor : getValueAtIndexOrDefault(ds.backgroundColor, i, arcOpts.backgroundColor);
+                                                                            var stroke = custom.borderColor ? custom.borderColor : getValueAtIndexOrDefault(ds.borderColor, i, arcOpts.borderColor);
+                                                                            var bw = custom.borderWidth ? custom.borderWidth : getValueAtIndexOrDefault(ds.borderWidth, i, arcOpts.borderWidth);
+
+                                                                            // We get the value of the current label
+                                                                            var value = chart.config.data.datasets[arc._datasetIndex].data[arc._index];
+                                                                            // Convert that value to a datetime
+                                                                            var date = new Date(value * 1000).toISOString().substr(11, 8);
+                                                                            return {
+                                                                              // Instead of `text: label,`
+                                                                              // We add the value to the string
+                                                                              text: label + " (" + date + ")",
+                                                                              fillStyle: fill,
+                                                                              strokeStyle: stroke,
+                                                                              lineWidth: bw,
+                                                                              hidden: isNaN(ds.data[i]) || meta.data[i].hidden,
+                                                                              index: i
+                                                                            };
+                                                                          });
+                                                                          var meetingStart = {
+                                                                            fillStyle: "white",
+                                                                            hidden: false,
+                                                                            index: -1,
+                                                                            lineWidth: 1,
+                                                                            strokeStyle: "#fff",
+                                                                            text: "Meeting Start",
+                                                                          }
+                                                                          var meetingEnd = {
+                                                                            fillStyle: "white",
+                                                                            hidden: false,
+                                                                            index: -1,
+                                                                            lineWidth: 1,
+                                                                            strokeStyle: "#fff",
+                                                                            text: "Meeting End",
+                                                                          }
+                                                                          labels.splice(0, 0, meetingStart);
+                                                                          labels.splice(labels.length, 0, meetingEnd);
+                                                                          return(labels);
+                                                                        } else {
+                                                                          return [];
+                                                                        }
+                                                                      }
        }
      }
 
@@ -291,6 +344,39 @@ class TimingCHart {
         this.chart.update(0);
       }
     }
+  }
+
+  updateTimeline(turnList) {
+
+    // Convert a turnlist into data for the Timeline chart
+
+    var names = [];
+    var ticks = [];
+    var colors = [];
+
+    for (var i=0; i < turnList.length; i++) {
+      var turn = turnList[i];
+      names.push(turn.name);
+      ticks.push(turn.length);
+      colors.push(primaryChartColors[turn.colorIndex]);
+    }
+
+    this.data.labels = names;
+    this.data.datasets[0].data = ticks;
+
+    this.chart.data.labels = names;
+    this.chart.data.datasets[0].data = ticks;
+    this.chart.data.datasets[0].backgroundColor = colors;
+
+    if (this.type == 'display') {
+      this.chart.update();
+    } else if (this.type == 'render'){
+      this.canvas.width = 3840;
+      this.canvas.height = 2160;
+
+      this.chart.update(0);
+    }
+
   }
 
 }

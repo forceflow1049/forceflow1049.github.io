@@ -13,6 +13,7 @@ class TimerControl {
     // app gets backgrounded and JS execution stops. Can then add in the right
     // number of secconds after
     this.lastTickTime = -1;
+    this.turnList = []; // Will hold a set of dictionaries defining each time the speaker changed.
 
   };
 
@@ -115,8 +116,22 @@ class TimerControl {
       $("#noSpeakerButton").removeClass("btn-secondary").addClass('btn-success');
     }
 
-    this.activeEntity = entity;
 
+
+    if (this.activeEntity != null) {
+      this.activeEntity.ticksActiveThisTurn = 0; // Set the old one to zero
+    }
+      this.activeEntity = entity; // New entity
+
+    if (entity != null) {
+      // Log the new speaking turn
+      var newTurn = {
+        name: this.activeEntity.displayName,
+        length: 0,
+        colorIndex: this.activeEntity.colorIndex,
+      };
+      this.turnList.push(newTurn);
+    }
   }
 
   renameEntity(existingName) {
@@ -162,12 +177,16 @@ class TimerControl {
 
     if(this.activeEntity) {
       this.activeEntity.addTicks(ticksToAdd);
+      if (this.turnList.length > 0) {
+        this.turnList[this.turnList.length-1].length = this.activeEntity.ticksActiveThisTurn; // Also update the current turn
+      }
     }
   }
 
   updateCharts() {
   speakerChart.updateChart(this.timedEntities);
   genderChart.updateChart(this.timedEntities);
+  timelineChart.updateTimeline(this.turnList);
   }
 
   downloadChart(chart) {
@@ -176,17 +195,21 @@ class TimerControl {
     var filename;
 
     if (chart == 'speakerChart') {
-      //this.updateSpeakerChart(true);
       speakerRenderChart.updateChart(this.timedEntities);
       canvas = document.getElementById('speakerChartRenderCanvas');
       filename = 'speaker_chart.png'
       // Color the background of the plot
       fillCanvasBackgroundWithColor(canvas, 'white');
     } else if (chart == "genderChart") {
-      //this.updateGenderChart(true);
       genderRenderChart.updateChart(this.timedEntities);
       canvas = document.getElementById('genderChartRenderCanvas');
       filename = "gender_chart.png"
+      // Color the background of the plot
+      fillCanvasBackgroundWithColor(canvas, 'white');
+    } else if (chart == "timelineChart") {
+      timelineRenderChart.updateTimeline(this.turnList);
+      canvas = document.getElementById('timelineChartRenderCanvas');
+      filename = 'timeline.png'
       // Color the background of the plot
       fillCanvasBackgroundWithColor(canvas, 'white');
     }
