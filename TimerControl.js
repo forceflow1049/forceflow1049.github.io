@@ -213,9 +213,9 @@ class TimerControl {
   }
 
   updateCharts() {
-  speakerChart.updateChart(this.timedEntities);
-  genderChart.updateChart(this.timedEntities);
-  timelineChart.updateTimeline(this.turnList);
+  speakerChart.updateChart();
+  genderChart.updateChart();
+  timelineChart.updateTimeline();
   }
 
   downloadChart(chart) {
@@ -292,5 +292,15 @@ class TimerControl {
 
     this.lastTickTime = -1; // So that we don't accidentally add a bunch of time when we restart
   }
+
+  sortEntitesByTalkingTime() {
+
+    // Function to sort the list of timed entities by their talking time.
+
+    this.timedEntities.sort(function(a,b) {
+        return b.ticksActive - a.ticksActive
+    });
+  }
+
 
 }

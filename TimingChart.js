@@ -1,12 +1,13 @@
 class TimingCHart {
 
-  constructor(style, type, name) {
+  constructor(style, type, name, owner) {
 
     // style = [nested, non-nested]. Nested is like the gender chart, with a
     // donut for who's in the meeting and one for talking time. Non-nested is
     // like the basic speaking chart, with only one donut for talking time.
     // type = [display, render]. Display charts show in the app, while render
     // charts are used to make the downloadable PNGs
+    // owner = instance of TimerControl that manages the data for this chart
 
     this.style = style;
     this.type = type;
@@ -15,6 +16,7 @@ class TimingCHart {
     this.canvas = null; // Will hold reference to the canvas the chart is rendered on
     this.data = {};
     this.options = {};
+    this.owner = owner;
 
 
     this.createOptions();
@@ -273,18 +275,23 @@ class TimingCHart {
     }
   }
 
-  updateChart(timedEntities) {
+  updateChart() {
 
     // Takes an array of TimedEntity and computes the data for the chart
+
+    this.owner.sortEntitesByTalkingTime();
+    var timedEntities = this.owner.timedEntities;
 
     if (this.name == 'Speakers') {
       var names = [];
       var ticks = [];
+      var colors = [];
 
       for (var i=0; i < timedEntities.length; i++) {
         var entity = timedEntities[i];
         names.push(entity.displayName);
         ticks.push(entity.ticksActive);
+        colors.push(primaryChartColors[entity.colorIndex]);
       }
 
       this.data.labels = names;
@@ -292,6 +299,7 @@ class TimingCHart {
 
       this.chart.data.labels = names;
       this.chart.data.datasets[0].data = ticks;
+      this.chart.data.datasets[0].backgroundColor = colors;
 
       if (this.type == 'display') {
         this.chart.update();
@@ -346,9 +354,11 @@ class TimingCHart {
     }
   }
 
-  updateTimeline(turnList) {
+  updateTimeline() {
 
     // Convert a turnlist into data for the Timeline chart
+
+    var turnList = this.owner.turnList
 
     var names = [];
     var ticks = [];
@@ -358,7 +368,7 @@ class TimingCHart {
       var turn = turnList[i];
       // Select only the turns longer than minTurnLength. If two consecutive turns
       // are from the same person (because of filtering), combine them into one
-      if (turn.length >= tc.minTurnLength) {
+      if (turn.length >= this.owner.minTurnLength) {
         if (i != 0) {
           var lastName = names[names.length-1]
           if (turn.name == lastName) {
@@ -379,7 +389,7 @@ class TimingCHart {
     if (names.length > 0) {
       document.getElementById("timelineChartHintDiv").style.display = 'none';
     } else{
-      var hintText = `<center>There are no turns longer than the minimum turn length of ${tc.minTurnLength} sec</center>`;
+      var hintText = `<center>There are no turns longer than the minimum turn length of ${this.owner.minTurnLength} sec</center>`;
       document.getElementById("timelineChartHintText").innerHTML = hintText;
       document.getElementById("timelineChartHintDiv").style.display = 'block';
     }
