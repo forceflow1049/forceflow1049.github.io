@@ -76,7 +76,7 @@ class TimingCHart {
                                         padding: 20
                                         }
                              };
-       if (this.name == 'Speaker') {
+       if (this.name == 'Speakers') {
          this.options.legend.labels.generateLabels = function(chart) { // This function generates the labels with the talking time. Copied and modied from the source code.
                                                                         var data = chart.data;
                                                                         if (data.labels.length && data.datasets.length) {
@@ -277,7 +277,7 @@ class TimingCHart {
 
     // Takes an array of TimedEntity and computes the data for the chart
 
-    if (this.name == 'Speaker') {
+    if (this.name == 'Speakers') {
       var names = [];
       var ticks = [];
 
@@ -356,11 +356,33 @@ class TimingCHart {
 
     for (var i=0; i < turnList.length; i++) {
       var turn = turnList[i];
-      names.push(turn.name);
-      ticks.push(turn.length);
-      colors.push(primaryChartColors[turn.colorIndex]);
+      // Select only the turns longer than minTurnLength. If two consecutive turns
+      // are from the same person (because of filtering), combine them into one
+      if (turn.length >= tc.minTurnLength) {
+        if (i != 0) {
+          var lastName = names[names.length-1]
+          if (turn.name == lastName) {
+            ticks[ticks.length-1] += turn.length;
+          } else {
+            names.push(turn.name);
+            ticks.push(turn.length);
+            colors.push(primaryChartColors[turn.colorIndex]);
+          }
+        } else {
+          names.push(turn.name);
+          ticks.push(turn.length);
+          colors.push(primaryChartColors[turn.colorIndex]);
+        }
+      }
     }
 
+    if (names.length > 0) {
+      document.getElementById("timelineChartHintDiv").style.display = 'none';
+    } else{
+      var hintText = `<center>There are no turns longer than the minimum turn length of ${tc.minTurnLength} sec</center>`;
+      document.getElementById("timelineChartHintText").innerHTML = hintText;
+      document.getElementById("timelineChartHintDiv").style.display = 'block';
+    }
     this.data.labels = names;
     this.data.datasets[0].data = ticks;
 

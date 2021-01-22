@@ -9,7 +9,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.bundle.min.js"></script>
-  <script src="https://kit.fontawesome.com/ada707bfc0.js" crossorigin="anonymous"></script>
+  <!-- <script src="https://kit.fontawesome.com/ada707bfc0.js" crossorigin="anonymous"></script> -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" crossorigin="anonymous"></script>
 
   <!-- Load my stylesheet -->
@@ -28,6 +28,9 @@
   </li>
   <li class="nav-item">
     <a class="nav-link" data-toggle="pill" href="#chartsTab">Charts</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" data-toggle="pill" href="#optionsTab">Options</a>
   </li>
   <li class="nav-item">
     <a class="nav-link" data-toggle="pill" href="#aboutTab">About</a>
@@ -74,7 +77,15 @@
             <canvas id="speakerChartCanvas" style="height: 100%;"></canvas>
           </div>
           <div class="card-footer text-muted">
-            <i class="fas fa-file-download" style="font-size: 24px; color: #0275d8;" onclick="tc.downloadChart('speakerChart')"></i>
+            <div class="btn-group dropup">
+              <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Download
+              </button>
+              <div class="dropdown-menu">
+                <a class="dropdown-item" onclick="tc.downloadChart('speakerChart')">Chart</a>
+                <a class="dropdown-item" >Table (CSV)</a>
+              </div>
+            </div>
             <div id="speakerChartRenderDiv" style="height: 0px; overflow: hidden;">
               <canvas id="speakerChartRenderCanvas" width=3840 height=2160></canvas>
             </div>
@@ -92,7 +103,15 @@
             <canvas id="genderChartCanvas" style="height: 100%;"></canvas>
           </div>
           <div class="card-footer text-muted">
-            <i class="fas fa-file-download" style="font-size: 24px; color: #0275d8;" onclick="tc.downloadChart('genderChart')"></i>
+            <div class="btn-group dropup">
+              <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Download
+              </button>
+              <div class="dropdown-menu">
+                <a class="dropdown-item" onclick="tc.downloadChart('genderChart')">Chart</a>
+                <a class="dropdown-item" >Table (CSV)</a>
+              </div>
+            </div>
             <div id="genderChartRenderDiv" style="height: 0px; overflow: hidden;">
               <canvas id="genderChartRenderCanvas" width=3840 height=2160></canvas>
             </div>
@@ -102,15 +121,45 @@
       <div class="col-sm-6 col-lg-4 col-xl-3">
         <div class="card">
           <div class="card-body">
-            <div id='timelineChartHint' style="position: absolute; z-index: 1; left: 50%; top: 40%;">
-              <!-- <div style="position: relative; left: -50%; top: -40%;">
-                <center>Add genders to your speakers to see this chart!</center>
-              </div> -->
+            <div id='timelineChartHintDiv' style="position: absolute; z-index: 1; left: 50%; top: 40%;">
+              <div id='timelineChartHintText' style="position: relative; left: -50%; top: -40%;">
+                <center>Start timing speakers to generate the timeline!</center>
+              </div>
             </div>
             <canvas id="timelineChartCanvas" style="height: 100%;"></canvas>
           </div>
           <div class="card-footer text-muted">
-            <i class="fas fa-file-download" style="font-size: 24px; color: #0275d8;" onclick="tc.downloadChart('timelineChart')"></i>
+            <div class="btn-group dropup">
+              <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Download
+              </button>
+              <div class="dropdown-menu">
+                <a class="dropdown-item" onclick="tc.downloadChart('timelineChart')">Chart</a>
+                <a class="dropdown-item" >Table (CSV)</a>
+              </div>
+            </div>
+            <div class="btn-group dropup">
+              <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Options
+              </button>
+              <div class="dropdown-menu">
+                <div class='row'>
+                  <div class='col ml-1'>
+                    Min. turn length:
+                  </div>
+                </div>
+                <form onsubmit="return tc.setMinTurnLength()">
+                  <div class="row mt-2">
+                    <div class="col-6 pr-0">
+                      <input type="text" class="form-control" id="timelineFilterThresholdInput" aria-describedby="newNameHelp" placeholder="10 sec" value="">
+                    </div>
+                    <div class="col-6 pl-0">
+                      <button class='btn-primary w-100 h-100'>Set</button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
             <div id="timelineChartRenderDiv" style="height: 0px; overflow: hidden;">
               <canvas id="timelineChartRenderCanvas" width=3840 height=2160></canvas>
             </div>
@@ -118,6 +167,21 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <div class="tab-pane container col-12" id="optionsTab">
+
+    <form onsubmit="return tc.setMeetingName()">
+       <div class="row mt-3">
+           <div class="col-8 col-sm-6 col-md-5 col-lg-4 col-xl-3">
+             <input type="text" class="form-control" id="meetingNameInput" aria-describedby="meetingNameHelp" placeholder="Meeting name">
+           </div>
+           <div class="col-4">
+             <button type="button" class="btn btn-primary" id="setMeetingNameButton" onclick="tc.setMeetingName()">Set</button>
+           </div>
+       </div>
+    </form>
+
   </div>
 
   <div class="tab-pane container col-12" id="aboutTab">
@@ -141,9 +205,8 @@
   function cleanName(name) {
 
     // Clean the name to remove problematic characters.
+    name = name.replace(/[^a-zA-Z0-9]/g, "_");
     name = name.trim(); // Remove leading/trailing whitespace
-    name = name.split(' ').join('_'); // Replace spaces with underscores
-    name = name.split('.').join('_'); // Periods cause problems with JQuery
 
     return name;
   }
@@ -177,11 +240,11 @@
 
   // Set up the charts
 
-  var speakerChart = new TimingCHart('non-nested', 'display', 'Speaker');
+  var speakerChart = new TimingCHart('non-nested', 'display', 'Speakers');
   var speakerChartCanvas = document.getElementById("speakerChartCanvas");
   speakerChart.addToCanvas(speakerChartCanvas);
 
-  var speakerRenderChart = new TimingCHart('non-nested', 'render', 'Speaker');
+  var speakerRenderChart = new TimingCHart('non-nested', 'render', 'Speakers');
   var speakerChartRenderCanvas = document.getElementById("speakerChartRenderCanvas");
   speakerRenderChart.addToCanvas(speakerChartRenderCanvas);
 

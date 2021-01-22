@@ -14,8 +14,37 @@ class TimerControl {
     // number of secconds after
     this.lastTickTime = -1;
     this.turnList = []; // Will hold a set of dictionaries defining each time the speaker changed.
-
+    this.minTurnLength = 10; // seconds; the time before a turn is shown on the timeline
+    this.meetingName = "";
   };
+
+  setMeetingName() {
+    var input = document.getElementById("meetingNameInput");
+    var name = input.value;
+    if (name != '') {
+      this.meetingName = name;
+
+      input.value = "";
+      input.placeholder = name;
+    }
+
+    return false; // Supress form behavior
+  }
+
+  setMinTurnLength() {
+
+    var valueInput = document.getElementById('timelineFilterThresholdInput');
+    var value = valueInput.value;
+
+    this.minTurnLength = parseInt(value.replace(/[^0-9 .]/g, "")); // Strip letters
+    valueInput.value = "";
+    valueInput.placeholder = this.minTurnLength + " sec";
+
+    timelineChart.updateTimeline(this.turnList);
+
+    return(false);
+  }
+
 
   getEntityByName(name) {
 
@@ -195,18 +224,27 @@ class TimerControl {
     var filename;
 
     if (chart == 'speakerChart') {
+      if (this.meetingName != "") {
+        speakerRenderChart.chart.options.title.text = this.meetingName + " - Speakers";
+      }
       speakerRenderChart.updateChart(this.timedEntities);
       canvas = document.getElementById('speakerChartRenderCanvas');
       filename = 'speaker_chart.png'
       // Color the background of the plot
       fillCanvasBackgroundWithColor(canvas, 'white');
     } else if (chart == "genderChart") {
+      if (this.meetingName != "") {
+        genderRenderChart.chart.options.title.text = this.meetingName + " - Gender";
+      }
       genderRenderChart.updateChart(this.timedEntities);
       canvas = document.getElementById('genderChartRenderCanvas');
       filename = "gender_chart.png"
       // Color the background of the plot
       fillCanvasBackgroundWithColor(canvas, 'white');
     } else if (chart == "timelineChart") {
+      if (this.meetingName != "") {
+        timelineRenderChart.chart.options.title.text = this.meetingName + " - Timeline";
+      }
       timelineRenderChart.updateTimeline(this.turnList);
       canvas = document.getElementById('timelineChartRenderCanvas');
       filename = 'timeline.png'
@@ -243,6 +281,7 @@ class TimerControl {
 
     // Hide the hint
     document.getElementById("speakerChartHint").style.display = 'none';
+    //document.getElementById("timelineChartHint").style.display = 'none';
     this.updateCharts();
   }
 

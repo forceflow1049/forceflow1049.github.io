@@ -82,20 +82,20 @@ class TimedEntity {
         <div class="dropdown-menu dropdown-menu-right col-11">
           <form onsubmit="return tc.renameEntity('${this.name}')">
             <div class="row">
-              <div class="col-8">
+              <div class="col-8 pr-0">
                 <input type="text" class="form-control" id="${this.name}NewNameInput" aria-describedby="newNameHelp" placeholder="Rename">
               </div>
-              <div class="col-4">
+              <div class="col-4 pl-0">
                 <button class='btn-primary w-100 h-100' onclick="tc.renameEntity('${this.name}')">Rename</button>
               </div>
             </div>
           </form>
           <form onsubmit="return tc.addGender('${this.name}')">
             <div class="row mt-2">
-              <div class="col-8">
-                <input type="text" class="form-control" id="${this.name}GenderInput" aria-describedby="newNameHelp" placeholder="Add gender" value="${this.gender}">
+              <div class="col-8 pr-0">
+                <input type="text" class="form-control" id="${this.name}GenderInput" aria-describedby="genderHelp" placeholder="Add gender" value="${this.gender}">
               </div>
-              <div class="col-4">
+              <div class="col-4 pl-0">
                 <button class='btn-primary w-100 h-100' onclick="tc.addGender('${this.name}')">Set</button>
               </div>
             </div>
