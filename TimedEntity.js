@@ -31,7 +31,6 @@ class TimedEntity {
     this.displayName = newName;
     this.name = cleanName(newName);
 
-
   }
 
   addGender(gender) {
@@ -75,33 +74,37 @@ class TimedEntity {
     var html = `
       <div class="btn-group col-sm-6 col-med-6 col-lg-4 col-xl-3 mt-3">
         <button type="button" class="btn btn-secondary" id="${this.name}MainButton">
-          <H4>${this.displayName}</H4>
+          <H4><div id="${this.name}MainButtonNameField">${this.displayName}</div></H4>
           <div id='${this.name}TimeField'></div>
         </button>
         <button type="button" class="btn dropdown-toggle dropdown-toggle-split col-2" data-toggle="dropdown" id="${this.name}DropdownButton" style="background-color: ${primaryChartColors[primaryChartColorIterator]}"></button>
         <div class="dropdown-menu dropdown-menu-right col-11">
           <form onsubmit="return tc.renameEntity('${this.name}')">
-            <div class="row">
+            <div class="row pl-1 pr-1">
               <div class="col-8 pr-0">
                 <input type="text" class="form-control" id="${this.name}NewNameInput" aria-describedby="newNameHelp" placeholder="Rename">
               </div>
-              <div class="col-4 pl-0">
-                <button class='btn-primary w-100 h-100' onclick="tc.renameEntity('${this.name}')">Rename</button>
+              <div class="col-4 pl-1">
+                <button class='btn btn-primary btn-block' onclick="tc.renameEntity('${this.name}')">Rename</button>
               </div>
             </div>
           </form>
           <form onsubmit="return tc.addGender('${this.name}')">
-            <div class="row mt-2">
-              <div class="col-8 pr-0">
-                <input type="text" class="form-control" id="${this.name}GenderInput" aria-describedby="genderHelp" placeholder="Add gender" value="${this.gender}">
+            <div class="row pl-1 pr-1 mt-2">
+              <div class="col-8 pr-0 ">
+                <input type="text" class="form-control" id="${this.name}GenderInput" placeholder="Add gender" value="${this.gender}">
               </div>
-              <div class="col-4 pl-0">
-                <button class='btn-primary w-100 h-100' onclick="tc.addGender('${this.name}')">Set</button>
+              <div class="col-4 pl-1">
+                <button class='btn btn-primary btn-block' onclick="tc.addGender('${this.name}')">Set</button>
               </div>
             </div>
           </form>
           <div class="dropdown-divider"></div>
-          <button class="btn-danger h-100" id="${this.name}RemoveButton">Remove</button>
+          <div class='row pl-1 pr-1'>
+            <div class='col'>
+              <button class="btn btn-danger" id="${this.name}RemoveButton">Remove</button>
+            </div>
+          </div>
         </div>
       </div>
       `

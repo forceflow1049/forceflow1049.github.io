@@ -279,8 +279,7 @@ class TimingCHart {
 
     // Takes an array of TimedEntity and computes the data for the chart
 
-    this.owner.sortEntitesByTalkingTime();
-    var timedEntities = this.owner.timedEntities;
+    var timedEntities = this.owner.sortEntitesByTalkingTime();
 
     if (this.name == 'Speakers') {
       var names = [];
@@ -408,7 +407,6 @@ class TimingCHart {
 
       this.chart.update(0);
     }
-
   }
 
 }

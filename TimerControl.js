@@ -9,13 +9,18 @@ class TimerControl {
     this.intervalTimer = null; // Will hold reference after we start setInterval
     this.chartTimer = null; // Will hold referenec to the setInterval for updating the charts
     this.timingActive = false; // Are we currently running the timer?
+    this.totalTicksActive = 0; // seconds that the timer has been running
     // Store the timestamp in ms of the last time a tick happened in case the
     // app gets backgrounded and JS execution stops. Can then add in the right
     // number of secconds after
     this.lastTickTime = -1;
     this.turnList = []; // Will hold a set of dictionaries defining each time the speaker changed.
     this.minTurnLength = 10; // seconds; the time before a turn is shown on the timeline
+
     this.meetingName = "";
+    this.attributeNameGender = "Gender";
+    this.attributeNameSecondary = "Secondary Attribute";
+    this.attributeNameTertiary = "Tertiary Attribute";
   };
 
   setMeetingName() {
@@ -26,6 +31,45 @@ class TimerControl {
 
       input.value = "";
       input.placeholder = name;
+    }
+
+    return false; // Supress form behavior
+  }
+
+  setAttributeName(attr) {
+
+    if (attr == "gender") {
+      var input = document.getElementById("genderAttributeNameInput");
+      var name = input.value;
+      if (name != '') {
+        this.attributeNameGender = name;
+        input.value = "";
+        input.placeholder = name;
+
+        document.getElementById("genderChartHintText").innerHTML = `<center>Add ${name.toLowerCase()}s to your speakers to see this chart!</center>`;
+        genderChart.chart.options.title.text = name;
+        genderChart.updateChart()
+      }
+    } else if (attr == "secondary") {
+      var input = document.getElementById("secondaryAttributeNameInput");
+      var name = input.value;
+      if (name != '') {
+        this.attributeNameSecondary = name;
+        input.value = "";
+        input.placeholder = name;
+        secondaryChart.chart.options.title.text = name;
+        secondaryChart.updateChart()
+      }
+    } else if (attr == "tertiary") {
+      var input = document.getElementById("tertiaryAttributeNameInput");
+      var name = input.value;
+      if (name != '') {
+        this.attributeNameTertiary = name;
+        input.value = "";
+        input.placeholder = name;
+        tertiaryChart.chart.options.title.text = name;
+        tertiaryChart.updateChart()
+      }
     }
 
     return false; // Supress form behavior
@@ -204,6 +248,12 @@ class TimerControl {
     }
     this.lastTickTime = nowTime;
 
+    // Update the master time
+    this.totalTicksActive += ticksToAdd;
+    var date = new Date(this.totalTicksActive * 1000).toISOString().substr(11, 8);
+    document.getElementById("masterTimeDisplay").innerHTML = date;
+
+    // Update the active entity
     if(this.activeEntity) {
       this.activeEntity.addTicks(ticksToAdd);
       if (this.turnList.length > 0) {
@@ -259,6 +309,44 @@ class TimerControl {
 
   }
 
+  downloadData() {
+
+    // Function to format the data as a CSV table and present it for download
+
+    if (this.timedEntities.length > 0) {
+      var hasGender = false;
+
+      // First loop the data to see which attributes the user has actually used
+      for (var i=0; i<this.timedEntities.length; i++) {
+        let entity = this.timedEntities[i];
+        if (entity.gender != '') {
+          hasGender = true;
+        }
+      }
+
+      // Now build the header with only the attributes needed
+      var csvString = 'Name,';
+      if (hasGender) {
+        csvString += this.attributeNameGender + ','
+      }
+      csvString += 'Speaking Time (sec)\n';
+
+      // Loop the timedEntities and build a row for each
+      for (var i=0; i<this.timedEntities.length; i++) {
+        let entity = this.timedEntities[i];
+        csvString += entity.displayName + ",";
+        if (hasGender) {
+          csvString += entity.gender + ",";
+        }
+        csvString += entity.ticksActive + '\n';
+      }
+
+      var blob = new Blob([csvString], {type: "text/csv;charset=utf-8"});
+      saveAs(blob, "meeting_data.csv");
+    }
+
+  }
+
   toggleTiming() {
     if (this.timingActive == false) {
       this.startTiming();
@@ -297,9 +385,12 @@ class TimerControl {
 
     // Function to sort the list of timed entities by their talking time.
 
-    this.timedEntities.sort(function(a,b) {
+    // clone the entities so that we don't mess up the main button order
+    var clone = this.timedEntities.slice();
+    clone.sort(function(a,b) {
         return b.ticksActive - a.ticksActive
     });
+    return clone
   }
 
 

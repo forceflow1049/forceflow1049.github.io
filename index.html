@@ -9,7 +9,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.bundle.min.js"></script>
-  <!-- <script src="https://kit.fontawesome.com/ada707bfc0.js" crossorigin="anonymous"></script> -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" crossorigin="anonymous"></script>
 
   <!-- Load my stylesheet -->
@@ -51,19 +50,22 @@
            </div>
        </div>
     </form>
-     <div class="row mt-3">
-       <div class="col-auto">
+     <div class="row align-items-center mt-1">
+       <div class="col-auto mt-1">
          <button type="button" class="btn btn-warning" id="toggleTiming">Start Timing</button>
        </div>
-       <div class="col-auto">
+       <div class="col-3 col-sm-2 col-md-2 col-lg-2 col-xl-1 pl-0 pr-0 mt-1">
+         <center><span id="masterTimeDisplay" class="badge" style="font-size: 1.2em;"> 00:00:00 </span></center>
+       </div>
+       <div class="col-auto mt-1">
          <button type="button" class="btn btn-secondary" id="noSpeakerButton">No Speaker</button>
        </div>
      </div>
 
     <div id='timedEtityButtons' class='row'>
     </div>
-
   </div>
+
   <div class="tab-pane container fade col-12" id="chartsTab">
     <div class="row mt-3">
       <div class="col-sm-6 col-lg-4 col-xl-3">
@@ -77,47 +79,14 @@
             <canvas id="speakerChartCanvas" style="height: 100%;"></canvas>
           </div>
           <div class="card-footer text-muted">
-            <div class="btn-group dropup mt-1">
-              <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Download
-              </button>
-              <div class="dropdown-menu">
-                <a class="dropdown-item" onclick="tc.downloadChart('speakerChart')">Chart</a>
-                <a class="dropdown-item" >Table (CSV)</a>
-              </div>
-            </div>
+            <button class='btn btn-secondary' onclick="tc.downloadChart('speakerChart')">Download</button>
             <div id="speakerChartRenderDiv" style="height: 0px; overflow: hidden;">
               <canvas id="speakerChartRenderCanvas" width=3840 height=2160></canvas>
             </div>
           </div>
         </div>
       </div>
-      <div class="col-sm-6 col-lg-4 col-xl-3">
-        <div class="card">
-          <div class="card-body">
-            <div id='genderChartHint' style="position: absolute; z-index: 1; left: 50%; top: 40%;">
-              <div style="position: relative; left: -50%; top: -40%;">
-                <center>Add genders to your speakers to see this chart!</center>
-              </div>
-            </div>
-            <canvas id="genderChartCanvas" style="height: 100%;"></canvas>
-          </div>
-          <div class="card-footer text-muted">
-            <div class="btn-group dropup mt-1">
-              <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Download
-              </button>
-              <div class="dropdown-menu">
-                <a class="dropdown-item" onclick="tc.downloadChart('genderChart')">Chart</a>
-                <a class="dropdown-item" >Table (CSV)</a>
-              </div>
-            </div>
-            <div id="genderChartRenderDiv" style="height: 0px; overflow: hidden;">
-              <canvas id="genderChartRenderCanvas" width=3840 height=2160></canvas>
-            </div>
-          </div>
-        </div>
-      </div>
+
       <div class="col-sm-6 col-lg-4 col-xl-3">
         <div class="card">
           <div class="card-body">
@@ -129,16 +98,8 @@
             <canvas id="timelineChartCanvas" style="height: 100%;"></canvas>
           </div>
           <div class="card-footer text-muted">
-            <div class="btn-group dropup mt-1">
-              <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Download
-              </button>
-              <div class="dropdown-menu">
-                <a class="dropdown-item" onclick="tc.downloadChart('timelineChart')">Chart</a>
-                <a class="dropdown-item" >Table (CSV)</a>
-              </div>
-            </div>
-            <div class="btn-group dropup mt-1">
+            <button class='btn btn-secondary' onclick="tc.downloadChart('timelineChart')">Download</button>
+            <div class="btn-group dropup">
               <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 Options
               </button>
@@ -166,18 +127,83 @@
           </div>
         </div>
       </div>
+
+      <div class="col-sm-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <div class="card-body">
+            <div id='genderChartHint' style="position: absolute; z-index: 1; left: 50%; top: 40%;">
+              <div id='genderChartHintText' style="position: relative; left: -50%; top: -40%;">
+                <center>Add genders to your speakers to see this chart!</center>
+              </div>
+            </div>
+            <canvas id="genderChartCanvas" style="height: 100%;"></canvas>
+          </div>
+          <div class="card-footer text-muted">
+            <button class='btn btn-secondary' onclick="tc.downloadChart('genderChart')">Download</button>
+            <div id="genderChartRenderDiv" style="height: 0px; overflow: hidden;">
+              <canvas id="genderChartRenderCanvas" width=3840 height=2160></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="tab-pane container col-12" id="optionsTab">
 
+    <div class="row mt-3">
+      <div class="col">
+        <button class='btn btn-primary' onclick='tc.downloadData()'>Download Data</button>
+      </div>
+    </div>
+    <div class="row mt-3">
+      <div class="col">
+        <h4>Change meeting name</h4>
+      </div>
+    </div>
     <form onsubmit="return tc.setMeetingName()">
-       <div class="row mt-3">
+       <div class="row">
            <div class="col-8 col-sm-6 col-md-5 col-lg-4 col-xl-3">
              <input type="text" class="form-control" id="meetingNameInput" aria-describedby="meetingNameHelp" placeholder="Meeting name">
            </div>
            <div class="col-4">
              <button type="button" class="btn btn-primary" id="setMeetingNameButton" onclick="tc.setMeetingName()">Set</button>
+           </div>
+       </div>
+    </form>
+
+    <div class="row mt-3">
+      <div class="col">
+        <h4>Change attribute names</h4>
+      </div>
+    </div>
+    <form onsubmit="return tc.setAttributeName('gender')">
+       <div class="row">
+           <div class="col-8 col-sm-6 col-md-5 col-lg-4 col-xl-3">
+             <input type="text" class="form-control" id="genderAttributeNameInput" placeholder="Gender">
+           </div>
+           <div class="col-4">
+             <button type="button" class="btn btn-primary" onclick="tc.setAttributeName('gender')">Set</button>
+           </div>
+       </div>
+    </form>
+    <form onsubmit="return tc.setAttributeName('secondary')">
+       <div class="row mt-1">
+           <div class="col-8 col-sm-6 col-md-5 col-lg-4 col-xl-3">
+             <input type="text" class="form-control" id="secondaryAttributeNameInput" placeholder="Secondary">
+           </div>
+           <div class="col-4">
+             <button type="button" class="btn btn-primary" onclick="tc.setAttributeName('secondary')">Set</button>
+           </div>
+       </div>
+    </form>
+    <form onsubmit="return tc.setAttributeName('tertiary')">
+       <div class="row mt-1">
+           <div class="col-8 col-sm-6 col-md-5 col-lg-4 col-xl-3">
+             <input type="text" class="form-control" id="tertiaryAttributeNameInput" placeholder="Tertiary">
+           </div>
+           <div class="col-4">
+             <button type="button" class="btn btn-primary" onclick="tc.setAttributeName('tertiary')">Set</button>
            </div>
        </div>
     </form>
@@ -189,7 +215,7 @@
       <H3>Who's speaking matters.</H3>
     </div>
     <div class='row col-md-8 col-lg-6 col-xl-4'>
-      <p>Research shows that the more diverse a meeting is, the more successful the outcome will be. But it's not enough to simply have a wide range of attendees—there must be diversity among those actually contributing. That's where <b>Talking Time Tracker</b> comes in.</p>
+      <p>Research shows that the more diverse a meeting is, the more successful the outcome will be. But it's not enough to simply have a wide range of attendees—there must be diversity among those actually contributing. That's where <b>Talking Time Tracker</b> comes in. Use these tools to understand who's talking in your meetings or export the data to add it to your analytics.</p>
     </div>
 
   </div>
