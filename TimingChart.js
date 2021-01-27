@@ -308,31 +308,87 @@ class TimingCHart {
 
         this.chart.update(0);
       }
-    } else if (this.name == 'Gender') {
-      var genders_ticks = {}; // The number of speaking seconds per gender
-      var genders_counts = {}; // The number of entities per gender
+    }
+    // else if (this.name == 'Gender') {
+    //   var genders_ticks = {}; // The number of speaking seconds per gender
+    //   var genders_counts = {}; // The number of entities per gender
+    //
+    //   for (var i=0; i < timedEntities.length; i++) {
+    //     var entity = timedEntities[i];
+    //     var gender = entity.gender;
+    //
+    //     if (gender != '') {
+    //       if (gender in genders_ticks) {
+    //         genders_ticks[gender] += entity.ticksActive;
+    //         genders_counts[gender] += 1;
+    //       } else {
+    //         genders_ticks[gender] = entity.ticksActive;
+    //         genders_counts[gender] = 1;
+    //       }
+    //     }
+    //   }
+    //
+    //   var labels = Object.keys(genders_ticks);
+    //   var ticks = [];
+    //   var counts = [];
+    //   for (var i=0; i<labels.length; i++) {
+    //     ticks.push(genders_ticks[labels[i]]);
+    //     counts.push(genders_counts[labels[i]]);
+    //   }
+    //   this.data.labels = labels;
+    //   this.data.datasets[0].data = ticks;
+    //   this.data.datasets[1].data = counts;
+    //
+    //   this.chart.data.labels = labels;
+    //   this.chart.data.datasets[0].data = ticks;
+    //   this.chart.data.datasets[1].data = counts;
+    //
+    //   if (this.type == 'display') {
+    //     this.chart.update();
+    //   } else if (this.type == 'render'){
+    //     this.canvas.width = 3840;
+    //     this.canvas.height = 2160;
+    //
+    //     this.chart.update(0);
+    //   }
+    // }
+    else if (['Gender','Secondary','Tertiary'].includes(this.name)) {
+      var value_ticks = {}; // The number of speaking seconds per attribute value
+      var value_counts = {}; // The number of entities per attribute value
 
       for (var i=0; i < timedEntities.length; i++) {
         var entity = timedEntities[i];
-        var gender = entity.gender;
+        var value;
 
-        if (gender != '') {
-          if (gender in genders_ticks) {
-            genders_ticks[gender] += entity.ticksActive;
-            genders_counts[gender] += 1;
+        switch(this.name) {
+          case 'Gender':
+            value = entity.gender;
+            break;
+          case 'Secondary':
+            value = entity.secondaryAttribute;
+            break;
+          case 'Tertiary':
+            value = entity.tertiaryAtrribute;
+            break;
+        }
+
+        if (value != '') {
+          if (value in value_ticks) {
+            value_ticks[value] += entity.ticksActive;
+            value_counts[value] += 1;
           } else {
-            genders_ticks[gender] = entity.ticksActive;
-            genders_counts[gender] = 1;
+            value_ticks[value] = entity.ticksActive;
+            value_counts[value] = 1;
           }
         }
       }
 
-      var labels = Object.keys(genders_ticks);
+      var labels = Object.keys(value_ticks);
       var ticks = [];
       var counts = [];
       for (var i=0; i<labels.length; i++) {
-        ticks.push(genders_ticks[labels[i]]);
-        counts.push(genders_counts[labels[i]]);
+        ticks.push(value_ticks[labels[i]]);
+        counts.push(value_counts[labels[i]]);
       }
       this.data.labels = labels;
       this.data.datasets[0].data = ticks;

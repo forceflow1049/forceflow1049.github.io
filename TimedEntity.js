@@ -7,6 +7,8 @@ class TimedEntity {
     this.name = cleanName(name);
     this.displayName = name;
     this.gender = '';
+    this.secondaryAttribute = '';
+    this.tertiaryAtrribute = '';
     this.owner = null;
     this.ticksActive = 0; // This will hold the number of seconds this entity has talked\
     this.ticksActiveThisTurn = 0; // This will hold the ticksActive since the instance became active
@@ -33,9 +35,19 @@ class TimedEntity {
 
   }
 
-  addGender(gender) {
+  setAttribute(attribute, value) {
 
-    this.gender = gender;
+    switch(attribute) {
+      case 'gender':
+        this.gender = value;
+        break;
+      case 'secondary':
+        this.secondaryAttribute = value;
+        break;
+      case 'tertiary':
+        this.tertiaryAtrribute = value;
+        break;
+    }
   }
 
   remove() {
@@ -89,13 +101,33 @@ class TimedEntity {
               </div>
             </div>
           </form>
-          <form onsubmit="return tc.addGender('${this.name}')">
+          <form onsubmit="return tc.setAttributeValue('${this.name}', 'gender')">
             <div class="row pl-1 pr-1 mt-2">
               <div class="col-8 pr-0 ">
-                <input type="text" class="form-control" id="${this.name}GenderInput" placeholder="Add gender" value="${this.gender}">
+                <input type="text" class="form-control" id="${this.name}GenderInput" placeholder="Add ${this.owner.attributeNameGender.toLowerCase()}" value="${this.gender}">
               </div>
               <div class="col-4 pl-1">
-                <button class='btn btn-primary btn-block' onclick="tc.addGender('${this.name}')">Set</button>
+                <button class='btn btn-primary btn-block' onclick="tc.setAttributeValue('${this.name}', 'gender')">Set</button>
+              </div>
+            </div>
+          </form>
+          <form onsubmit="return tc.setAttributeValue('${this.name}', 'secondary')">
+            <div class="row pl-1 pr-1 mt-2">
+              <div class="col-8 pr-0 ">
+                <input type="text" class="form-control" id="${this.name}SecondaryInput" placeholder="Add ${this.owner.attributeNameSecondary.toLowerCase()}" value="${this.secondaryAttribute}">
+              </div>
+              <div class="col-4 pl-1">
+                <button class='btn btn-primary btn-block' onclick="tc.setAttributeValue('${this.name}', 'secondary')">Set</button>
+              </div>
+            </div>
+          </form>
+          <form onsubmit="return tc.setAttributeValue('${this.name}', 'tertiary')">
+            <div class="row pl-1 pr-1 mt-2">
+              <div class="col-8 pr-0 ">
+                <input type="text" class="form-control" id="${this.name}TertiaryInput" placeholder="Add ${this.owner.attributeNameTertiary.toLowerCase()}" value="${this.tertiaryAtrribute}">
+              </div>
+              <div class="col-4 pl-1">
+                <button class='btn btn-primary btn-block' onclick="tc.setAttributeValue('${this.name}', 'tertiary')">Set</button>
               </div>
             </div>
           </form>

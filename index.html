@@ -28,13 +28,21 @@
   <li class="nav-item">
     <a class="nav-link" data-toggle="pill" href="#chartsTab">Charts</a>
   </li>
-  <li class="nav-item">
+  <li class="nav-item d-none d-sm-block">
     <a class="nav-link" data-toggle="pill" href="#optionsTab">Options</a>
   </li>
-  <li class="nav-item">
+  <li class="nav-item d-none d-sm-block">
     <a class="nav-link" data-toggle="pill" href="#aboutTab">About</a>
   </li>
+  <li class="nav-item dropdown d-block d-sm-none">
+    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">More</a>
+    <div class="dropdown-menu">
+      <a class="dropdown-item" data-toggle="pill" href="#optionsTab">Options</a>
+      <a class="dropdown-item" data-toggle="pill" href="#aboutTab">About</a>
+    </div>
+  </li>
 </ul>
+<hr/>
 
 <!-- Tab panes -->
 <div class="tab-content">
@@ -51,14 +59,14 @@
        </div>
     </form>
      <div class="row align-items-center mt-1">
-       <div class="col-auto mt-1">
-         <button type="button" class="btn btn-warning" id="toggleTiming">Start Timing</button>
+       <div class="col-sm-auto col-6 mt-1">
+         <button type="button" class="btn btn-warning btn-block" id="toggleTiming">Start Timing</button>
        </div>
-       <div class="col-3 col-sm-2 col-md-2 col-lg-2 col-xl-1 pl-0 pr-0 mt-1">
+       <div class="col-3 col-sm-2 col-md-2 col-lg-2 col-xl-1 pl-0 pr-0 mt-1 d-none d-sm-block">
          <center><span id="masterTimeDisplay" class="badge" style="font-size: 1.2em;"> 00:00:00 </span></center>
        </div>
-       <div class="col-auto mt-1">
-         <button type="button" class="btn btn-secondary" id="noSpeakerButton">No Speaker</button>
+       <div class="col-sm-auto col-6 mt-1">
+         <button type="button" class="btn btn-secondary btn-block" id="noSpeakerButton">No Speaker</button>
        </div>
      </div>
 
@@ -115,7 +123,7 @@
                       <input type="text" class="form-control" id="timelineFilterThresholdInput" aria-describedby="newNameHelp" placeholder="10 sec" value="">
                     </div>
                     <div class="col-6 pl-0">
-                      <button class='btn-primary w-100 h-100'>Set</button>
+                      <button class='btn btn-primary w-100 h-100'>Set</button>
                     </div>
                   </div>
                 </form>
@@ -142,6 +150,44 @@
             <button class='btn btn-secondary' onclick="tc.downloadChart('genderChart')">Download</button>
             <div id="genderChartRenderDiv" style="height: 0px; overflow: hidden;">
               <canvas id="genderChartRenderCanvas" width=3840 height=2160></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <div class="card-body">
+            <div id='secondaryChartHint' style="position: absolute; z-index: 1; left: 50%; top: 40%;">
+              <div id='secondaryChartHintText' style="position: relative; left: -50%; top: -40%;">
+                <center>Add secondary attributes to your speakers to see this chart!</center>
+              </div>
+            </div>
+            <canvas id="secondaryChartCanvas" style="height: 100%;"></canvas>
+          </div>
+          <div class="card-footer text-muted">
+            <button class='btn btn-secondary' onclick="tc.downloadChart('secondaryChart')">Download</button>
+            <div id="secondaryChartRenderDiv" style="height: 0px; overflow: hidden;">
+              <canvas id="secondaryChartRenderCanvas" width=3840 height=2160></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <div class="card-body">
+            <div id='tertiaryChartHint' style="position: absolute; z-index: 1; left: 50%; top: 40%;">
+              <div id='tertiaryChartHintText' style="position: relative; left: -50%; top: -40%;">
+                <center>Add tertiary attributes to your speakers to see this chart!</center>
+              </div>
+            </div>
+            <canvas id="tertiaryChartCanvas" style="height: 100%;"></canvas>
+          </div>
+          <div class="card-footer text-muted">
+            <button class='btn btn-secondary' onclick="tc.downloadChart('tertiaryChart')">Download</button>
+            <div id="tertiaryChartRenderDiv" style="height: 0px; overflow: hidden;">
+              <canvas id="tertiaryChartRenderCanvas" width=3840 height=2160></canvas>
             </div>
           </div>
         </div>
@@ -274,6 +320,14 @@
   var speakerChartRenderCanvas = document.getElementById("speakerChartRenderCanvas");
   speakerRenderChart.addToCanvas(speakerChartRenderCanvas);
 
+  var timelineChart = new TimingCHart('non-nested', 'display', 'Timeline', tc);
+  var timelineChartCanvas = document.getElementById("timelineChartCanvas");
+  timelineChart.addToCanvas(timelineChartCanvas);
+
+  var timelineRenderChart = new TimingCHart('non-nested', 'render', 'Timeline', tc);
+  var timelineChartRenderCanvas = document.getElementById("timelineChartRenderCanvas");
+  timelineRenderChart.addToCanvas(timelineChartRenderCanvas);
+
   var genderChart = new TimingCHart('nested', 'display', 'Gender', tc);
   var genderChartCanvas = document.getElementById("genderChartCanvas");
   genderChart.addToCanvas(genderChartCanvas);
@@ -282,13 +336,21 @@
   var genderChartRenderCanvas = document.getElementById("genderChartRenderCanvas");
   genderRenderChart.addToCanvas(genderChartRenderCanvas);
 
-  var timelineChart = new TimingCHart('non-nested', 'display', 'Timeline', tc);
-  var timelineChartCanvas = document.getElementById("timelineChartCanvas");
-  timelineChart.addToCanvas(timelineChartCanvas);
+  var secondaryChart = new TimingCHart('nested', 'display', 'Secondary', tc);
+  var secondaryChartCanvas = document.getElementById("secondaryChartCanvas");
+  secondaryChart.addToCanvas(secondaryChartCanvas);
 
-  var timelineRenderChart = new TimingCHart('non-nested', 'render', 'Timeline', tc);
-  var timelineChartRenderCanvas = document.getElementById("timelineChartRenderCanvas");
-  timelineRenderChart.addToCanvas(timelineChartRenderCanvas);
+  var secondaryRenderChart = new TimingCHart('nested', 'render', 'Secondary', tc);
+  var secondaryChartRenderCanvas = document.getElementById("secondaryChartRenderCanvas");
+  secondaryRenderChart.addToCanvas(secondaryChartRenderCanvas);
+
+  var tertiaryChart = new TimingCHart('nested', 'display', 'Tertiary', tc);
+  var tertiaryChartCanvas = document.getElementById("tertiaryChartCanvas");
+  tertiaryChart.addToCanvas(tertiaryChartCanvas);
+
+  var tertiaryRenderChart = new TimingCHart('nested', 'render', 'Tertiary', tc);
+  var tertiaryChartRenderCanvas = document.getElementById("tertiaryChartRenderCanvas");
+  tertiaryRenderChart.addToCanvas(tertiaryChartRenderCanvas);
 
 </script>
 </html>

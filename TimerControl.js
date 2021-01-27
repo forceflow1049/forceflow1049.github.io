@@ -71,6 +71,7 @@ class TimerControl {
         tertiaryChart.updateChart()
       }
     }
+    this.rebuildButtons();
 
     return false; // Supress form behavior
   }
@@ -115,8 +116,8 @@ class TimerControl {
       }
       if (!nameTaken) {
         var entity = new TimedEntity(displayName);
+        this.addTimedEntity(entity); // Must be called before createButton()
         entity.createButton();
-        this.addTimedEntity(entity);
         document.getElementById("newNameInput").value = '';
       }
     }
@@ -151,15 +152,30 @@ class TimerControl {
     this.updateCharts();
   }
 
-  addGender(entityName) {
+  setAttributeValue(entityName, attribute) {
 
-    var gender = document.getElementById(entityName+'GenderInput').value;
-    this.getEntityByName(entityName).addGender(gender);
+    if (attribute == "gender") {
+      var value = document.getElementById(entityName+'GenderInput').value;
+      this.getEntityByName(entityName).setAttribute('gender', value);
+
+
+      // Hide the hint
+      document.getElementById("genderChartHint").style.display = 'none';
+    } else if (attribute == "secondary") {
+      var value = document.getElementById(entityName+'SecondaryInput').value;
+      this.getEntityByName(entityName).setAttribute('secondary', value);
+
+      // Hide the hint
+      document.getElementById("secondaryChartHint").style.display = 'none';
+    } else if (attribute == "tertiary") {
+      var value = document.getElementById(entityName+'TertiaryInput').value;
+      this.getEntityByName(entityName).setAttribute('tertiary', value);
+
+      // Hide the hint
+      document.getElementById("tertiaryChartHint").style.display = 'none';
+    }
 
     $(`#${entityName}DropdownButton`).dropdown('hide');
-
-    // Hide the hint
-    document.getElementById("genderChartHint").style.display = 'none';
     this.updateCharts();
 
     return false; // Stop the page from reloading on form submit.
@@ -263,9 +279,11 @@ class TimerControl {
   }
 
   updateCharts() {
-  speakerChart.updateChart();
-  genderChart.updateChart();
-  timelineChart.updateTimeline();
+    speakerChart.updateChart();
+    genderChart.updateChart();
+    secondaryChart.updateChart();
+    tertiaryChart.updateChart();
+    timelineChart.updateTimeline();
   }
 
   downloadChart(chart) {
@@ -289,6 +307,24 @@ class TimerControl {
       genderRenderChart.updateChart(this.timedEntities);
       canvas = document.getElementById('genderChartRenderCanvas');
       filename = "gender_chart.png"
+      // Color the background of the plot
+      fillCanvasBackgroundWithColor(canvas, 'white');
+    } else if (chart == "secondaryChart") {
+      if (this.meetingName != "") {
+        secondaryRenderChart.chart.options.title.text = this.meetingName + " - Secondary";
+      }
+      secondaryRenderChart.updateChart(this.timedEntities);
+      canvas = document.getElementById('secondaryChartRenderCanvas');
+      filename = "secondary_chart.png"
+      // Color the background of the plot
+      fillCanvasBackgroundWithColor(canvas, 'white');
+    } else if (chart == "tertiaryChart") {
+      if (this.meetingName != "") {
+        tertiaryRenderChart.chart.options.title.text = this.meetingName + " - Tertiary";
+      }
+      tertiaryRenderChart.updateChart(this.timedEntities);
+      canvas = document.getElementById('tertiaryChartRenderCanvas');
+      filename = "tertiary_chart.png"
       // Color the background of the plot
       fillCanvasBackgroundWithColor(canvas, 'white');
     } else if (chart == "timelineChart") {
