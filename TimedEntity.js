@@ -97,7 +97,7 @@ class TimedEntity {
                 <input type="text" class="form-control" id="${this.name}NewNameInput" aria-describedby="newNameHelp" placeholder="Rename">
               </div>
               <div class="col-4 pl-1">
-                <button class='btn btn-primary btn-block' onclick="tc.renameEntity('${this.name}')">Rename</button>
+                <button class='btn btn-primary btn-block'>Rename</button>
               </div>
             </div>
           </form>
@@ -107,7 +107,7 @@ class TimedEntity {
                 <input type="text" class="form-control" id="${this.name}GenderInput" placeholder="Add ${this.owner.attributeNameGender.toLowerCase()}" value="${this.gender}">
               </div>
               <div class="col-4 pl-1">
-                <button class='btn btn-primary btn-block' onclick="tc.setAttributeValue('${this.name}', 'gender')">Set</button>
+                <button class='btn btn-primary btn-block'>Set</button>
               </div>
             </div>
           </form>
@@ -117,7 +117,7 @@ class TimedEntity {
                 <input type="text" class="form-control" id="${this.name}SecondaryInput" placeholder="Add ${this.owner.attributeNameSecondary.toLowerCase()}" value="${this.secondaryAttribute}">
               </div>
               <div class="col-4 pl-1">
-                <button class='btn btn-primary btn-block' onclick="tc.setAttributeValue('${this.name}', 'secondary')">Set</button>
+                <button class='btn btn-primary btn-block'>Set</button>
               </div>
             </div>
           </form>
@@ -127,7 +127,7 @@ class TimedEntity {
                 <input type="text" class="form-control" id="${this.name}TertiaryInput" placeholder="Add ${this.owner.attributeNameTertiary.toLowerCase()}" value="${this.tertiaryAtrribute}">
               </div>
               <div class="col-4 pl-1">
-                <button class='btn btn-primary btn-block' onclick="tc.setAttributeValue('${this.name}', 'tertiary')">Set</button>
+                <button class='btn btn-primary btn-block'>Set</button>
               </div>
             </div>
           </form>
